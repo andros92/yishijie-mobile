@@ -4,21 +4,30 @@ import android.content.Context
 import android.util.Log
 import com.yishijie.chuanshuo.api.ApiClient
 import com.yishijie.chuanshuo.api.ApiResult
+import com.yishijie.chuanshuo.api.ExchangeBuyRequest
+import com.yishijie.chuanshuo.api.ExchangeCancelRequest
+import com.yishijie.chuanshuo.api.ExchangeListRequest
 import com.yishijie.chuanshuo.api.LoginRequest
+import com.yishijie.chuanshuo.api.MailClaimRequest
+import com.yishijie.chuanshuo.api.MarkPaidRequest
+import com.yishijie.chuanshuo.api.RechargeOrderRequest
 import com.yishijie.chuanshuo.api.RegisterRequest
 import com.yishijie.chuanshuo.api.SaveUploadRequest
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * 异世界传说 - 存档/账号同步管理器
- * 手环 ↔ 手机（小米穿戴 SDK 消息），手机 ↔ 服务器（/api/yishijie）
+ * 异世界传说 - 手环↔手机↔服务器 桥接
+ * 处理手环发来的 req_* 请求，调用 /api/yishijie，带 _reqId 回包
  */
 class GameSyncManager private constructor(
     private val context: Context,
@@ -64,34 +73,316 @@ class GameSyncManager private constructor(
     private fun handleGameMessage(json: JSONObject) {
         val type = json.optString("type", "")
         when (type) {
+            "req_register" -> scope.launch { handleReqRegister(json) }
+            "req_upload_save" -> scope.launch { handleReqUploadSave(json) }
+            "req_download_save" -> scope.launch { handleReqDownloadSave(json) }
+            "req_exchange_listings" -> scope.launch { handleReqExchangeListings(json) }
+            "req_exchange_list" -> scope.launch { handleReqExchangeList(json) }
+            "req_exchange_buy" -> scope.launch { handleReqExchangeBuy(json) }
+            "req_exchange_cancel" -> scope.launch { handleReqExchangeCancel(json) }
+            "req_mail_list" -> scope.launch { handleReqMailList(json) }
+            "req_mail_claim" -> scope.launch { handleReqMailClaim(json) }
+            "req_recharge_order" -> scope.launch { handleReqRechargeOrder(json) }
             "game_data" -> {
-                // 手环推送整包存档（上传到服务器）
+                // 手环推送整包存档：自动上传服务器
                 scope.launch {
                     val raw = json.optJSONObject("data")
-                    val ok = if (raw != null) {
-                        uploadSaveToServer(com.google.gson.JsonParser().parse(raw.toString()).asJsonObject)
-                    } else {
-                        false
-                    }
+                    val ok = if (raw != null) uploadSaveToServer(gsonObj(raw.toString())) else false
                     saveCallback?.onSaveUploaded(ok, if (ok) "手环存档已同步到服务器" else "同步失败")
                 }
             }
-            "save_uploaded" -> {
-                saveCallback?.onSaveUploaded(
-                    json.optBoolean("success", false),
-                    json.optString("message", "")
-                )
+            "save_uploaded" -> saveCallback?.onSaveUploaded(json.optBoolean("success", false), json.optString("message", ""))
+            "save_downloaded" -> saveCallback?.onSaveDownloaded(json.optJSONObject("data"))
+            "error" -> saveCallback?.onError(json.optString("message", "未知错误"))
+        }
+    }
+
+    private fun gsonObj(s: String): JsonObject {
+        return try {
+            JsonParser().parse(s).asJsonObject
+        } catch (e: Exception) {
+            JsonObject()
+        }
+    }
+
+    private fun sendResponse(reqId: Int, type: String, body: JSONObject) {
+        val msg = JSONObject().apply {
+            put("tag", "game")
+            put("type", type)
+            if (reqId != 0) put("_reqId", reqId)
+            val it = body.keys()
+            while (it.hasNext()) {
+                val k = it.next()
+                put(k, body.get(k))
             }
-            "save_downloaded" -> {
-                saveCallback?.onSaveDownloaded(json.optJSONObject("data"))
+        }
+        interconn.sendToWatch(msg, onFail = { err -> Log.e(TAG, "回包失败 type=$type: $err") })
+    }
+
+    // ========== 注册 ==========
+    private suspend fun handleReqRegister(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val name = json.optString("playerName", "手环玩家")
+        val fp = json.optString("deviceFingerprint", "")
+        if (fp.isEmpty()) {
+            sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹为空"))
+            return
+        }
+        val request = RegisterRequest(name, fp, deviceManager.getPhoneFingerprint())
+        when (val r = ApiClient.safeApiCall { ApiClient.api.register(request) }) {
+            is ApiResult.Success -> {
+                val d = r.data
+                if (d?.success == true && d.playerId != null) {
+                    deviceManager.saveAccount(d.playerId, d.playerName ?: name)
+                    deviceManager.switchAccount(d.playerId, d.playerName ?: name)
+                    d.apiKey?.let { ApiClient.apiKey = it }
+                    sendResponse(reqId, "register_result", JSONObject().apply {
+                        put("playerId", d.playerId)
+                        put("playerName", d.playerName ?: name)
+                        put("isNew", d.isNew)
+                    })
+                    // 通知手环保存 playerId
+                    interconn.sendToWatch(
+                        JSONObject().put("tag", "game").put("type", "save_player_id")
+                            .put("playerId", d.playerId)
+                            .put("playerName", d.playerName ?: name)
+                            .put("deviceFingerprint", fp)
+                    )
+                } else {
+                    sendResponse(reqId, "register_result", JSONObject().put("error", d?.error ?: "注册失败"))
+                }
             }
-            "error" -> {
-                saveCallback?.onError(json.optString("message", "未知错误"))
+            is ApiResult.Error -> sendResponse(reqId, "register_result", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 存档 ==========
+    private suspend fun handleReqUploadSave(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val save = json.optJSONObject("gameData") ?: json.optJSONObject("data")
+        val ok = if (save != null) uploadSaveToServer(gsonObj(save.toString())) else false
+        sendResponse(reqId, "save_uploaded", JSONObject().put("success", ok))
+    }
+
+    private suspend fun handleReqDownloadSave(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val data = downloadSaveFromServer()
+        if (data != null) {
+            sendResponse(reqId, "save_downloaded", JSONObject().put("data", JSONObject(data.toString())))
+        } else {
+            sendResponse(reqId, "save_downloaded", JSONObject().put("data", JSONObject.NULL))
+        }
+    }
+
+    // ========== 交易所 ==========
+    private suspend fun handleReqExchangeListings(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val page = json.optInt("page", 1)
+        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeListings(page, 20) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { it ->
+                    arr.put(JSONObject().apply {
+                        put("id", it.id)
+                        put("sellerName", it.seller_name)
+                        put("itemKey", it.item_key)
+                        put("itemName", it.item_name)
+                        put("qty", it.qty)
+                        put("price", it.price)
+                        put("quality", it.quality)
+                        put("gem", it.gem)
+                        put("dur", it.dur)
+                        put("maxDur", it.max_dur)
+                    })
+                }
+                sendResponse(reqId, "exchange_listings", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "exchange_listings", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqExchangeList(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "exchange_listed", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val request = ExchangeListRequest(
+            playerId = me, deviceFingerprint = fp, apiKey = key,
+            key = json.optString("itemKey"), name = json.optString("itemName"),
+            img = json.optString("itemImg", ""),
+            qty = json.optInt("qty", 1), price = json.optInt("price", 0),
+            quality = if (json.has("quality")) json.optString("quality") else null,
+            gem = if (json.has("gem")) json.optString("gem") else null,
+            dur = json.optInt("dur", 0), maxDur = json.optInt("maxDur", 0)
+        )
+        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeList(request) }) {
+            is ApiResult.Success -> sendResponse(reqId, "exchange_listed", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("error", r.data?.error ?: "")
+                put("listingId", r.data?.listingId ?: 0)
+            })
+            is ApiResult.Error -> sendResponse(reqId, "exchange_listed", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqExchangeBuy(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "exchange_bought", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val request = ExchangeBuyRequest(json.optInt("listingId", 0), me, fp, key)
+        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeBuy(request) }) {
+            is ApiResult.Success -> sendResponse(reqId, "exchange_bought", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "exchange_bought", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqExchangeCancel(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "exchange_cancelled", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val request = ExchangeCancelRequest(json.optInt("listingId", 0), me, fp, key)
+        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeCancel(request) }) {
+            is ApiResult.Success -> sendResponse(reqId, "exchange_cancelled", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "exchange_cancelled", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 邮箱 ==========
+    private suspend fun handleReqMailList(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "mail_list", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.mailList(me, fp, key) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { m ->
+                    arr.put(JSONObject().apply {
+                        put("id", m.id)
+                        put("title", m.title)
+                        put("content", m.content)
+                        put("coins", m.coins)
+                        put("claimed", m.claimed)
+                        put("createdAt", m.created_at)
+                    })
+                }
+                sendResponse(reqId, "mail_list", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "mail_list", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqMailClaim(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "mail_claimed", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val req = MailClaimRequest(me, fp, key, json.optInt("mailId", 0))
+        when (val r = ApiClient.safeApiCall { ApiClient.api.claimMail(req) }) {
+            is ApiResult.Success -> sendResponse(reqId, "mail_claimed", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("coins", r.data?.coins ?: 0)
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "mail_claimed", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 充值订单（手环发起） ==========
+    private suspend fun handleReqRechargeOrder(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "recharge_order", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val amount = json.optDouble("amount", 0.0)
+        val request = RechargeOrderRequest(me, fp, key, amount)
+        when (val r = ApiClient.safeApiCall { ApiClient.api.createRechargeOrder(request) }) {
+            is ApiResult.Success -> sendResponse(reqId, "recharge_order", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("orderId", r.data?.orderId ?: "")
+                put("qty", r.data?.qty ?: 0)
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "recharge_order", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 手机端直接调用（供 SaveManager 等页面使用） ==========
+    suspend fun downloadSaveFromServer(): JsonObject? {
+        val playerId = deviceManager.getCurrentPlayerId() ?: return null
+        val fp = deviceManager.getDeviceFingerprint() ?: return null
+        val key = ApiClient.apiKey ?: return null
+        return when (val r = ApiClient.safeApiCall { ApiClient.api.downloadSave(playerId, fp, key) }) {
+            is ApiResult.Success -> r.data?.data
+            is ApiResult.Error -> {
+                Log.e(TAG, "下载存档失败: ${r.message}")
+                null
             }
         }
     }
 
-    // ========== 账号 ==========
+    suspend fun uploadSaveToServer(save: JsonObject?): Boolean {
+        if (save == null) return false
+        val playerId = deviceManager.getCurrentPlayerId() ?: return false
+        val fp = deviceManager.getDeviceFingerprint() ?: return false
+        val key = ApiClient.apiKey ?: return false
+        return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, SaveUploadRequest(fp, key, save)) }) {
+            is ApiResult.Success -> r.data?.success == true
+            is ApiResult.Error -> {
+                Log.e(TAG, "上传存档失败: ${r.message}")
+                false
+            }
+        }
+    }
+
+    fun uploadSaveToBand(save: JSONObject, callback: SaveCallback) {
+        this.saveCallback = callback
+        interconn.sendToWatch(
+            JSONObject().put("tag", "game").put("type", "upload_save").put("data", save),
+            onFail = { err -> callback.onError(err) }
+        )
+    }
+
+    fun downloadSaveFromBand(callback: SaveCallback) {
+        this.saveCallback = callback
+        interconn.sendToWatch(
+            JSONObject().put("tag", "game").put("type", "download_save"),
+            onFail = { err -> callback.onError(err) }
+        )
+    }
+
     fun registerAccount(playerName: String, callback: AccountCallback) {
         scope.launch {
             val fp = deviceManager.getDeviceFingerprint()
@@ -118,8 +409,7 @@ class GameSyncManager private constructor(
         scope.launch {
             val fp = deviceManager.getDeviceFingerprint()
                 ?: run { callback.onLoggedIn(null, null, "未连接手环，无法获取设备指纹"); return@launch }
-            val request = LoginRequest(fp, deviceManager.getPhoneFingerprint())
-            when (val r = ApiClient.safeApiCall { ApiClient.api.login(request) }) {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.login(LoginRequest(fp, deviceManager.getPhoneFingerprint())) }) {
                 is ApiResult.Success -> {
                     val d = r.data
                     if (d?.success == true && d.playerId != null) {
@@ -133,52 +423,6 @@ class GameSyncManager private constructor(
                 is ApiResult.Error -> callback.onLoggedIn(null, null, r.message)
             }
         }
-    }
-
-    // ========== 服务器存档 ==========
-    suspend fun downloadSaveFromServer(): JsonObject? {
-        val playerId = deviceManager.getCurrentPlayerId() ?: return null
-        val fp = deviceManager.getDeviceFingerprint() ?: return null
-        val key = ApiClient.apiKey ?: return null
-        return when (val r = ApiClient.safeApiCall { ApiClient.api.downloadSave(playerId, fp, key) }) {
-            is ApiResult.Success -> r.data?.data
-            is ApiResult.Error -> {
-                Log.e(TAG, "下载存档失败: ${r.message}")
-                null
-            }
-        }
-    }
-
-    suspend fun uploadSaveToServer(save: JsonObject?): Boolean {
-        if (save == null) return false
-        val playerId = deviceManager.getCurrentPlayerId() ?: return false
-        val fp = deviceManager.getDeviceFingerprint() ?: return false
-        val key = ApiClient.apiKey ?: return false
-        val request = SaveUploadRequest(fp, key, save)
-        return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, request) }) {
-            is ApiResult.Success -> r.data?.success == true
-            is ApiResult.Error -> {
-                Log.e(TAG, "上传存档失败: ${r.message}")
-                false
-            }
-        }
-    }
-
-    // ========== 手环存档 ==========
-    fun uploadSaveToBand(save: JSONObject, callback: SaveCallback) {
-        this.saveCallback = callback
-        interconn.sendToWatch(
-            JSONObject().put("tag", "game").put("type", "upload_save").put("data", save),
-            onFail = { err -> callback.onError(err) }
-        )
-    }
-
-    fun downloadSaveFromBand(callback: SaveCallback) {
-        this.saveCallback = callback
-        interconn.sendToWatch(
-            JSONObject().put("tag", "game").put("type", "download_save"),
-            onFail = { err -> callback.onError(err) }
-        )
     }
 
     fun release() {

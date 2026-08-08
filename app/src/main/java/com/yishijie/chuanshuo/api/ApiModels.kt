@@ -163,6 +163,35 @@ data class AnnouncementsResponse(
     val error: String? = null
 )
 
+// ========== 邮箱 ==========
+data class MailItem(
+    val id: Int = 0,
+    val title: String = "",
+    val content: String = "",
+    val coins: Int = 0,
+    val claimed: Int = 0,
+    val created_at: String = ""
+)
+
+data class MailListResponse(
+    val success: Boolean = false,
+    val data: List<MailItem> = emptyList(),
+    val error: String? = null
+)
+
+data class MailClaimRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val mailId: Int
+)
+
+data class MailClaimResponse(
+    val success: Boolean = false,
+    val coins: Int = 0,
+    val error: String? = null
+)
+
 data class VersionResponse(
     val success: Boolean = false,
     val version: String = "",

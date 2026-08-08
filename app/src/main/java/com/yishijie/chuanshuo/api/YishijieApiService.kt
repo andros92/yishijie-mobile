@@ -53,6 +53,17 @@ interface YishijieApiService {
     @POST("/api/yishijie/admin/mark-paid")
     suspend fun markOrderPaid(@Body request: MarkPaidRequest): Response<BaseResponse>
 
+    // ========== 邮箱 ==========
+    @GET("/api/yishijie/mail/{playerId}")
+    suspend fun mailList(
+        @Path("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<MailListResponse>
+
+    @POST("/api/yishijie/mail/claim")
+    suspend fun claimMail(@Body request: MailClaimRequest): Response<MailClaimResponse>
+
     // ========== 公告 / 版本 ==========
     @GET("/api/yishijie/announcements")
     suspend fun announcements(): Response<AnnouncementsResponse>
