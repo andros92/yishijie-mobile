@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="异世界传说"
+            android:textSize="26sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="手机端 · 手环桥接 / 存档 / 交易所 / 充值"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:paddingBottom="16dp" />
+
+        <!-- 连接状态 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/background_card"
+            android:padding="14dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="手环连接"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvConnStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="未连接"
+                android:textSize="14sp"
+                android:textColor="@color/error"
+                android:paddingBottom="2dp" />
+
+            <TextView
+                android:id="@+id/tvConnDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="等待连接..."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:paddingBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnRefreshConn"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="刷新连接"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/accent"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnBridge"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="桥接详情"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/primary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 账号 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/background_card"
+            android:padding="14dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="账号"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="未注册"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:paddingBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:hint="玩家名称（注册用）"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:background="@drawable/bg_input"
+                android:paddingHorizontal="10dp"
+                android:inputType="text" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <Button
+                    android:id="@+id/btnRegister"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="注册"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/success"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="登录"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/accent" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 功能入口 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="存档管理"
+                android:textSize="15sp"
+                android:backgroundTint="@color/primary"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnExchange"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="交易所"
+                android:textSize="15sp"
+                android:backgroundTint="@color/res_source" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnRecharge"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="充值"
+                android:textSize="15sp"
+                android:backgroundTint="@color/res_gold"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnAnnouncements"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="公告"
+                android:textSize="15sp"
+                android:backgroundTint="@color/accent" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvToast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/warning"
+            android:paddingTop="12dp"
+            android:gravity="center" />
+    </LinearLayout>
+</ScrollView>

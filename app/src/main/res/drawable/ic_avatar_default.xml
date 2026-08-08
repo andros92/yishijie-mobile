@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+    <!-- 背景圆 -->
+    <path
+        android:fillColor="#1a3a2a"
+        android:pathData="M40,40m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+    <!-- 头部 -->
+    <path
+        android:fillColor="#72f0ca"
+        android:pathData="M40,25c-6.6,0 -12,5.4 -12,12s5.4,12 12,12s12,-5.4 12,-12s-5.4,-12 -12,-12z" />
+    <!-- 身体 -->
+    <path
+        android:fillColor="#72f0ca"
+        android:pathData="M40,50c-11,0 -20,5.7 -20,12.5v6.5h40v-6.5c0,-6.8 -9,-12.5 -20,-12.5z" />
+</vector>

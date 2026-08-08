@@ -1,0 +1,11 @@
+.gradle/
+build/
+app/build/
+local.properties
+keystore.properties
+release.jks
+watch_sign.p12
+debug.keystore
+*.iml
+.idea/
+captures/

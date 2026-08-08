@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true"
+    tools:context=".ui.BridgeActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 返回 + 标题 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="‹ 返回"
+                android:textColor="#8890B0"
+                android:textSize="15sp"
+                android:paddingEnd="20dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onBackClicked" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="开箱万界垃圾佬"
+                android:textColor="#F0F0F8"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:text="手机桥接中心 · 连接后可接收手环游戏数据"
+            android:textColor="#5A6080"
+            android:textSize="12sp" />
+
+        <!-- 账号信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_player"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="账号信息"
+                android:textColor="#8890B0"
+                android:textSize="12sp"
+                android:letterSpacing="0.06" />
+
+            <TextView
+                android:id="@+id/tvProfileStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="未绑定"
+                android:textColor="#FF5E5E"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDeviceFingerprint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#5A6080"
+                android:textSize="12sp"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <!-- 桥接状态 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_player"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="桥接状态"
+                android:textColor="#8890B0"
+                android:textSize="12sp"
+                android:letterSpacing="0.06" />
+
+            <TextView
+                android:id="@+id/tvBridgeConnectedStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="未连接"
+                android:textColor="#FF5E5E"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBridgePhase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#C8D0F0"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvBridgeNode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="#6A7098"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvBridgeDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="#C8D0F0"
+                android:textSize="12sp" />
+
+            <!-- 权限检查列表 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical">
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#141E38" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="手表应用安装"
+                        android:textColor="#8890B0"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvAppInstalled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未知"
+                        android:textColor="#C8D0F0"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="设备权限"
+                        android:textColor="#8890B0"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvDevicePermission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未知"
+                        android:textColor="#C8D0F0"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="通知权限"
+                        android:textColor="#8890B0"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvNotifyPermission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未知"
+                        android:textColor="#C8D0F0"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="手表连接"
+                        android:textColor="#8890B0"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvWatchConnected"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未知"
+                        android:textColor="#C8D0F0"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 操作按钮 -->
+            <Button
+                android:id="@+id/btnRefreshBridge"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="16dp"
+                android:text="刷新桥接状态"
+                android:textSize="13sp"
+                android:backgroundTint="#1E2D55"
+                android:textColor="#C8D0F0" />
+
+            <Button
+                android:id="@+id/btnRequestPermission"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:text="申请桥接权限"
+                android:textSize="13sp"
+                android:backgroundTint="#5F4BB6"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- 状态日志 -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="14dp"
+            android:background="@drawable/bg_card_player"
+            android:textColor="#C8D0F0"
+            android:textSize="13sp"
+            android:text="等待初始化..." />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

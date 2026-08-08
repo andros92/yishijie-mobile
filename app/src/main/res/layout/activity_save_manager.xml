@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="64dp"
+            android:layout_height="40dp"
+            android:text="返回"
+            android:textSize="14sp"
+            android:backgroundTint="@color/accent" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="存档管理"
+            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="存档 = 手环整包数据（背包/等级/宠物/装备…），上传到服务器后可跨设备恢复。"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary"
+        android:paddingVertical="10dp" />
+
+    <Button
+        android:id="@+id/btnDownloadServer"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="从服务器下载存档"
+        android:textSize="15sp"
+        android:backgroundTint="@color/primary"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnUploadServer"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="上传存档到服务器"
+        android:textSize="15sp"
+        android:backgroundTint="@color/success"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnDownloadBand"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="从手环下载存档"
+        android:textSize="15sp"
+        android:backgroundTint="@color/res_source"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnUploadBand"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="上传存档到手环"
+        android:textSize="15sp"
+        android:backgroundTint="@color/accent"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="@color/warning"
+        android:paddingTop="10dp"
+        android:gravity="center" />
+</LinearLayout>

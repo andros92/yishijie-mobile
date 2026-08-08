@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 排名徽章-银 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#2A2A30" />
+    <stroke android:width="2dp" android:color="#A0A0B0" />
+</shape>

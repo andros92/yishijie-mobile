@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="64dp"
+            android:layout_height="40dp"
+            android:text="返回"
+            android:textSize="14sp"
+            android:backgroundTint="@color/accent" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="充值"
+            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1 元 = 10000 金币（服务端配置）。创建订单后，测试阶段用管理密钥确认到账。"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary"
+        android:paddingVertical="10dp" />
+
+    <EditText
+        android:id="@+id/etAmount"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="充值金额（元）"
+        android:inputType="numberDecimal"
+        android:textSize="15sp"
+        android:background="@drawable/bg_input"
+        android:paddingHorizontal="10dp" />
+
+    <Button
+        android:id="@+id/btnCreateOrder"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="创建充值订单"
+        android:textSize="15sp"
+        android:backgroundTint="@color/res_gold"
+        android:layout_marginTop="10dp" />
+
+    <EditText
+        android:id="@+id/etSecret"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="管理密钥（测试确认到账）"
+        android:inputType="text"
+        android:textSize="14sp"
+        android:background="@drawable/bg_input"
+        android:paddingHorizontal="10dp"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/btnMarkPaid"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="确认订单到账（测试）"
+        android:textSize="14sp"
+        android:backgroundTint="@color/success"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="@color/warning"
+        android:paddingTop="10dp"
+        android:gravity="center" />
+</LinearLayout>

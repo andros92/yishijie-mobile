@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主题色 - 金橙主色调 -->
+    <color name="primary">#F0A030</color>
+    <color name="primary_dark">#C88020</color>
+    <color name="primary_light">#FFC060</color>
+
+    <!-- 强调色 - 紫蓝 -->
+    <color name="accent">#6C5CE7</color>
+    <color name="accent_dark">#4A3DB5</color>
+    <color name="accent_light">#8B7DF0</color>
+
+    <!-- 背景层次 -->
+    <color name="background">#060810</color>
+    <color name="background_card">#0C1120</color>
+    <color name="surface">#0F1528</color>
+    <color name="surface_light">#141C34</color>
+    <color name="surface_border">#1C2645</color>
+
+    <!-- 文字 -->
+    <color name="text_primary">#F0F0F8</color>
+    <color name="text_secondary">#8890B0</color>
+    <color name="text_hint">#4A5070</color>
+    <color name="text_gold">#F0C060</color>
+
+    <!-- 状态色 -->
+    <color name="success">#3CFF8D</color>
+    <color name="warning">#FFB347</color>
+    <color name="error">#FF5E5E</color>
+
+    <!-- 排行榜 -->
+    <color name="rank_gold">#FFD700</color>
+    <color name="rank_silver">#C0C0C0</color>
+    <color name="rank_bronze">#CD7F32</color>
+
+    <!-- 资源色 -->
+    <color name="res_gold">#F0C060</color>
+    <color name="res_diamond">#64D8FF</color>
+    <color name="res_key">#FFB74D</color>
+    <color name="res_source">#C8A0FF</color>
+    <color name="res_daoyun">#FF8A65</color>
+    <color name="res_wine">#FF80AB</color>
+</resources>

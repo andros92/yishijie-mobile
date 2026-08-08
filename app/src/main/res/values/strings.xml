@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">异世界传说</string>
+    <string name="leaderboard">排行榜</string>
+    <string name="save_manager">存档管理</string>
+    <string name="connect_band">连接手环</string>
+    <string name="disconnect">断开连接</string>
+    <string name="refresh">刷新</string>
+    <string name="restore_save">恢复存档</string>
+    <string name="combat_power">战力</string>
+    <string name="tower">爬塔</string>
+    <string name="gold">金币</string>
+    <string name="connected">已连接</string>
+    <string name="disconnected">未连接</string>
+    <string name="loading">加载中...</string>
+    <string name="no_data">暂无数据</string>
+    <string name="save_success">存档保存成功</string>
+    <string name="save_failed">存档保存失败</string>
+    <string name="upload_success">存档上传成功</string>
+    <string name="download_success">存档下载成功</string>
+</resources>
