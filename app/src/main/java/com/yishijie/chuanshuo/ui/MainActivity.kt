@@ -1,6 +1,7 @@
 package com.yishijie.chuanshuo.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.yishijie.chuanshuo.R
@@ -55,8 +56,12 @@ class MainActivity : AppCompatActivity() {
             TAB_PROFILE -> ProfileFragment()
             else -> HomeFragment()
         }
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.content, frag)
-            .commitAllowingStateLoss()
+        try {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.content, frag)
+                .commitAllowingStateLoss()
+        } catch (e: Exception) {
+            Log.e("MainActivity", "切换页面失败: $tab", e)
+        }
     }
 }

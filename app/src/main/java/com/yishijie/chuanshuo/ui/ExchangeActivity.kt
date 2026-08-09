@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.yishijie.chuanshuo.R
 import com.yishijie.chuanshuo.api.ApiClient
 import com.yishijie.chuanshuo.api.ApiResult
 import com.yishijie.chuanshuo.api.ExchangeBuyRequest
@@ -24,6 +25,7 @@ class ExchangeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityExchangeBinding
     private lateinit var deviceManager: DeviceManager
+    private var mineMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,12 +36,40 @@ class ExchangeActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
         binding.btnHistory.setOnClickListener { showHistory() }
         binding.btnList.setOnClickListener { doList() }
+        binding.tabHall.setOnClickListener { switchTab(false) }
+        binding.tabMine.setOnClickListener { switchTab(true) }
+        binding.btnSearch.setOnClickListener { loadListings() }
+        binding.etSearch.setOnEditorActionListener { _, _, _ -> loadListings(); true }
+        applyTabStyle()
         loadListings()
+    }
+
+    private fun switchTab(mine: Boolean) {
+        if (mineMode == mine) return
+        mineMode = mine
+        applyTabStyle()
+        loadListings()
+    }
+
+    private fun applyTabStyle() {
+        binding.tabHall.setBackgroundResource(if (!mineMode) R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
+        binding.tabMine.setBackgroundResource(if (mineMode) R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
+        binding.tabHall.setTextColor(Color.parseColor(if (!mineMode) "#111827" else "#9AA3C0"))
+        binding.tabMine.setTextColor(Color.parseColor(if (mineMode) "#111827" else "#9AA3C0"))
     }
 
     private fun loadListings() {
         CoroutineScope(Dispatchers.Main).launch {
-            when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeListings(1, 20) }) {
+            val kw = binding.etSearch.text.toString().trim()
+            val me = deviceManager.getCurrentPlayerId()
+            val fp = deviceManager.getDeviceFingerprint()
+            val key = ApiClient.apiKey
+            val call = if (mineMode && me != null && fp != null && key != null) {
+                ApiClient.api.exchangeListings(1, 20, null, kw.ifEmpty { null }, true, me, fp, key)
+            } else {
+                ApiClient.api.exchangeListings(1, 20, null, kw.ifEmpty { null })
+            }
+            when (val r = ApiClient.safeApiCall { call }) {
                 is ApiResult.Success -> renderListings(r.data?.data ?: emptyList())
                 is ApiResult.Error -> status("加载失败: ${r.message}")
             }
@@ -49,7 +79,7 @@ class ExchangeActivity : AppCompatActivity() {
     private fun renderListings(list: List<ListingItem>) {
         binding.llListings.removeAllViews()
         if (list.isEmpty()) {
-            binding.llListings.addView(emptyRow("暂无在售挂单"))
+            binding.llListings.addView(emptyRow(if (mineMode) "暂无挂单" else "暂无在售挂单"))
             return
         }
         list.forEach { it ->
@@ -104,30 +134,59 @@ class ExchangeActivity : AppCompatActivity() {
         })
         info.setOnClickListener { showItemDetail(item) }
         row.addView(info)
-        row.addView(TextView(this).apply {
-            text = "购买"
-            textSize = 13f
-            setTextColor(Color.WHITE)
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            setPadding(dp(14), dp(8), dp(14), dp(8))
-            background = android.graphics.drawable.GradientDrawable().apply {
-                cornerRadius = dp(8).toFloat()
-                setColor(Color.parseColor("#7B8CFF"))
-            }
-            setOnClickListener {
-                val me = deviceManager.getCurrentPlayerId()
-                if (me == null) { status("请先登录账号"); return@setOnClickListener }
-                AlertDialog.Builder(this@ExchangeActivity)
-                    .setTitle("确认购买")
-                    .setMessage("花费 ${item.price} 金币购买 ${item.item_name}×${item.qty}？\n（手续费由卖家承担）")
-                    .setPositiveButton("购买") { _, _ -> doBuy(item) }
-                    .setNegativeButton("取消", null)
-                    .show()
-            }
-        })
+        row.addView(actionButton(item))
         card.addView(row)
         return card
+    }
+
+    private fun actionButton(item: ListingItem): TextView {
+        return if (mineMode) {
+            TextView(this).apply {
+                text = if (item.status == "on") "撤单" else "已处理"
+                textSize = 13f
+                setTextColor(Color.WHITE)
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setPadding(dp(14), dp(8), dp(14), dp(8))
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius = dp(8).toFloat()
+                    setColor(Color.parseColor(if (item.status == "on") "#E05260" else "#3A4668"))
+                }
+                if (item.status == "on") {
+                    setOnClickListener {
+                        AlertDialog.Builder(this@ExchangeActivity)
+                            .setTitle("撤单")
+                            .setMessage("确认撤下 ${item.item_name}×${item.qty} 的挂单？物品会退回背包")
+                            .setPositiveButton("撤单") { _, _ -> doCancel(item) }
+                            .setNegativeButton("取消", null)
+                            .show()
+                    }
+                }
+            }
+        } else {
+            TextView(this).apply {
+                text = "购买"
+                textSize = 13f
+                setTextColor(Color.WHITE)
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setPadding(dp(14), dp(8), dp(14), dp(8))
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    cornerRadius = dp(8).toFloat()
+                    setColor(Color.parseColor("#7B8CFF"))
+                }
+                setOnClickListener {
+                    val me = deviceManager.getCurrentPlayerId()
+                    if (me == null) { status("请先登录账号"); return@setOnClickListener }
+                    AlertDialog.Builder(this@ExchangeActivity)
+                        .setTitle("确认购买")
+                        .setMessage("花费 ${item.price} 金币购买 ${item.item_name}×${item.qty}？\n（手续费由卖家承担）")
+                        .setPositiveButton("购买") { _, _ -> doBuy(item) }
+                        .setNegativeButton("取消", null)
+                        .show()
+                }
+            }
+        }
     }
 
     private fun showItemDetail(item: ListingItem) {
@@ -161,6 +220,23 @@ class ExchangeActivity : AppCompatActivity() {
                     loadListings()
                 }
                 is ApiResult.Error -> status("购买失败: ${r.message}")
+            }
+        }
+    }
+
+    private fun doCancel(item: ListingItem) {
+        val me = deviceManager.getCurrentPlayerId() ?: run { status("请先登录"); return }
+        val fp = deviceManager.getDeviceFingerprint() ?: run { status("请先连接手环"); return }
+        val key = ApiClient.apiKey ?: run { status("缺少 apiKey，请重新登录"); return }
+        CoroutineScope(Dispatchers.Main).launch {
+            when (val r = ApiClient.safeApiCall {
+                ApiClient.api.exchangeCancel(ExchangeCancelRequest(item.id, me, fp, key))
+            }) {
+                is ApiResult.Success -> {
+                    status(if (r.data?.success == true) "已撤单，物品退回背包" else "撤单失败: ${r.data?.error}")
+                    loadListings()
+                }
+                is ApiResult.Error -> status("撤单失败: ${r.message}")
             }
         }
     }
@@ -203,7 +279,9 @@ class ExchangeActivity : AppCompatActivity() {
                 is ApiResult.Success -> {
                     val sb = StringBuilder()
                     (r.data?.data ?: emptyList()).forEach { h ->
-                        sb.append("${h.item_name}×${h.qty} ${h.price}金（手续费${h.fee}） ${if (h.seller_id == me) "卖出" else "买入"}\n")
+                        sb.append("${h.item_name}×${h.qty} ${h.price}金（手续费${h.fee}） ${if (h.seller_id == me) "卖出" else "买入"}")
+                        if (h.item_uid.isNotEmpty()) sb.append(" ID:${h.item_uid}")
+                        sb.append("\n")
                     }
                     AlertDialog.Builder(this@ExchangeActivity)
                         .setTitle("成交记录")

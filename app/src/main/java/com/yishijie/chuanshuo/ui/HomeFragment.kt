@@ -77,8 +77,15 @@ class HomeFragment : Fragment() {
 
     private fun setupUI() {
         binding.btnRefreshConn.setOnClickListener {
+            interconnManager.initialize()
             interconnManager.refreshConnection()
+            CompanionService.start(requireContext())
             binding.tvToast.text = "正在刷新连接..."
+        }
+        binding.btnDisconnect.setOnClickListener {
+            CompanionService.stop(requireContext())
+            updateConnectionUI(false, "已断开连接")
+            binding.tvToast.text = "已断开连接"
         }
         binding.btnBridge.setOnClickListener {
             startActivity(Intent(requireContext(), BridgeActivity::class.java))

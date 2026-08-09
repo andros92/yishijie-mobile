@@ -35,7 +35,12 @@ interface YishijieApiService {
     suspend fun exchangeListings(
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 10,
-        @Query("category") category: String? = null
+        @Query("category") category: String? = null,
+        @Query("keyword") keyword: String? = null,
+        @Query("mine") mine: Boolean? = null,
+        @Query("playerId") playerId: String? = null,
+        @Query("deviceFingerprint") deviceFingerprint: String? = null,
+        @Query("apiKey") apiKey: String? = null
     ): Response<ListingsResponse>
 
     @POST("/api/yishijie/exchange/buy")
