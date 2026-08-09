@@ -62,6 +62,11 @@ class GameSyncManager private constructor(
         fun onLoggedIn(playerId: String?, playerName: String?, error: String?)
     }
 
+    data class SaveUploadResult(
+        val ok: Boolean,
+        val error: String? = null
+    )
+
     private val deviceManager = DeviceManager.getInstance(context)
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var saveCallback: SaveCallback? = null
@@ -210,8 +215,15 @@ class GameSyncManager private constructor(
         val reqId = json.optInt("_reqId", 0)
         val save = json.optJSONObject("gameData") ?: json.optJSONObject("data")
         val deviceTime = json.optLong("deviceTime", 0)
-        val ok = if (save != null) uploadSaveToServer(gsonObj(save.toString()), deviceTime) else false
-        sendResponse(reqId, "save_uploaded", JSONObject().put("success", ok))
+        val res = if (save != null) {
+            uploadSaveToServerWithResult(gsonObj(save.toString()), deviceTime)
+        } else {
+            SaveUploadResult(false, "存档数据为空")
+        }
+        sendResponse(reqId, "save_uploaded", JSONObject().apply {
+            put("success", res.ok)
+            if (!res.ok) put("error", res.error ?: "上传失败")
+        })
     }
 
     private suspend fun handleReqDownloadSave(json: JSONObject) {
@@ -620,15 +632,28 @@ class GameSyncManager private constructor(
     }
 
     suspend fun uploadSaveToServer(save: JsonObject?, deviceTime: Long = 0): Boolean {
-        if (save == null) return false
-        val playerId = deviceManager.getCurrentPlayerId() ?: return false
-        val fp = deviceManager.getDeviceFingerprint() ?: return false
-        val key = ApiClient.apiKey ?: return false
+        return uploadSaveToServerWithResult(save, deviceTime).ok
+    }
+
+    /**
+     * 上传存档并返回具体失败原因（未登录/指纹缺失/服务器时间校验/鉴权等）
+     */
+    suspend fun uploadSaveToServerWithResult(save: JsonObject?, deviceTime: Long = 0): SaveUploadResult {
+        if (save == null) return SaveUploadResult(false, "存档数据为空")
+        val playerId = deviceManager.getCurrentPlayerId() ?: return SaveUploadResult(false, "未登录账号")
+        val fp = deviceManager.getDeviceFingerprint() ?: return SaveUploadResult(false, "未获取到设备指纹，请先连接手环")
+        val key = ApiClient.apiKey ?: return SaveUploadResult(false, "未登录账号")
         return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, SaveUploadRequest(fp, key, save, deviceTime)) }) {
-            is ApiResult.Success -> r.data?.success == true
+            is ApiResult.Success -> {
+                if (r.data?.success == true) {
+                    SaveUploadResult(true)
+                } else {
+                    SaveUploadResult(false, r.data?.error ?: "服务器返回失败")
+                }
+            }
             is ApiResult.Error -> {
                 Log.e(TAG, "上传存档失败: ${r.message}")
-                false
+                SaveUploadResult(false, r.message)
             }
         }
     }

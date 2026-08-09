@@ -41,10 +41,10 @@ class SaveManagerActivity : AppCompatActivity() {
                     }
                     lifecycleScope.launch {
                         status("上传中…")
-                        val ok = withContext(Dispatchers.IO) {
-                            syncManager.uploadSaveToServer(JsonParser().parse(data.toString()).asJsonObject)
+                        val res = withContext(Dispatchers.IO) {
+                            syncManager.uploadSaveToServerWithResult(JsonParser().parse(data.toString()).asJsonObject)
                         }
-                        status(if (ok) "上传成功：云存档已更新" else "上传失败，请检查网络/登录")
+                        status(if (res.ok) "上传成功：云存档已更新" else "上传失败：${res.error ?: "未知原因"}")
                         loadCloudSummary()
                     }
                 }
