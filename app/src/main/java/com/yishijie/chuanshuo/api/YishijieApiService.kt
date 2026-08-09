@@ -98,6 +98,17 @@ interface YishijieApiService {
     @GET("/api/yishijie/pvp/rating")
     suspend fun pvpRating(@Query("playerId") playerId: String): Response<PvpRatingResponse>
 
+    // ========== 爱发电充值 ==========
+    @GET("/api/yishijie/payment/afdian-url")
+    suspend fun afdianUrl(): Response<AfdianUrlResponse>
+
+    @GET("/api/yishijie/payment/orders")
+    suspend fun paymentOrders(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<PaymentOrdersResponse>
+
     // ========== 公告 / 版本 ==========
     @GET("/api/yishijie/announcements")
     suspend fun announcements(): Response<AnnouncementsResponse>

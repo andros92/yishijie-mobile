@@ -285,6 +285,28 @@ data class PvpRatingResponse(
     val error: String? = null
 )
 
+// ========== 爱发电充值 ==========
+data class AfdianUrlResponse(
+    val success: Boolean = false,
+    val afdianUrl: String = "",
+    val error: String? = null
+)
+
+data class PaymentOrderItem(
+    val order_id: String = "",
+    val amount: Double = 0.0,
+    val qty: Int = 0,
+    val status: String = "",
+    val created_at: String = "",
+    val paid_at: String? = null
+)
+
+data class PaymentOrdersResponse(
+    val success: Boolean = false,
+    val data: List<PaymentOrderItem> = emptyList(),
+    val error: String? = null
+)
+
 data class VersionResponse(
     val success: Boolean = false,
     val version: String = "",

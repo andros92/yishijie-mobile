@@ -49,40 +49,84 @@ class ExchangeActivity : AppCompatActivity() {
     private fun renderListings(list: List<ListingItem>) {
         binding.llListings.removeAllViews()
         if (list.isEmpty()) {
-            binding.llListings.addView(row("暂无在售挂单", Color.parseColor("#8890B0"), null))
+            binding.llListings.addView(emptyRow("暂无在售挂单"))
             return
         }
         list.forEach { it ->
             val quality = if (it.quality.isNotEmpty()) " [${it.quality}]" else ""
             val gem = if (it.gem.isNotEmpty()) "◆" else ""
-            val line = "${it.item_name}$quality$gem ×${it.qty} — ${it.price}金（卖家：${it.seller_name}）"
-            binding.llListings.addView(row(line, Color.parseColor("#F0F0F8"), it))
+            binding.llListings.addView(row(it, "${it.item_name}$quality$gem ×${it.qty}"))
         }
     }
 
-    private fun row(text: String, color: Int, item: ListingItem?): TextView {
-        val tv = TextView(this).apply {
+    private fun emptyRow(text: String): TextView {
+        return TextView(this).apply {
             this.text = text
             textSize = 14f
-            setTextColor(color)
-            gravity = Gravity.START
-            setPadding(dp(4), dp(6), dp(4), dp(6))
+            setTextColor(Color.parseColor("#9CA3AF"))
+            gravity = Gravity.CENTER
+            setPadding(0, dp(24), 0, dp(24))
         }
-        if (item != null) {
-            tv.setOnClickListener {
+    }
+
+    private fun row(item: ListingItem, title: String): com.google.android.material.card.MaterialCardView {
+        val card = com.google.android.material.card.MaterialCardView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(10) }
+            radius = dp(14).toFloat()
+            elevation = dp(1).toFloat()
+            setCardBackgroundColor(Color.WHITE)
+            strokeColor = Color.parseColor("#E2E6EF")
+            strokeWidth = 1
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(14), dp(12), dp(14))
+        }
+        val info = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        info.addView(TextView(this).apply {
+            text = title
+            textSize = 15f
+            setTextColor(Color.parseColor("#1A1D26"))
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        })
+        info.addView(TextView(this).apply {
+            text = "${item.price} 金币 · ${item.seller_name}"
+            textSize = 12f
+            setTextColor(Color.parseColor("#6B7280"))
+            setPadding(0, dp(3), 0, 0)
+        })
+        row.addView(info)
+        row.addView(TextView(this).apply {
+            text = "购买"
+            textSize = 13f
+            setTextColor(Color.WHITE)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#2563EB"))
+            }
+            setOnClickListener {
                 val me = deviceManager.getCurrentPlayerId()
                 if (me == null) { status("请先登录账号"); return@setOnClickListener }
-                AlertDialog.Builder(this)
-                    .setTitle("购买")
-                    .setMessage("确认花 ${item.price} 金币购买 ${item.item_name}×${item.qty}？（手续费由卖家承担）")
-                    .setPositiveButton("购买") { _, _ ->
-                        doBuy(item)
-                    }
+                AlertDialog.Builder(this@ExchangeActivity)
+                    .setTitle("确认购买")
+                    .setMessage("花费 ${item.price} 金币购买 ${item.item_name}×${item.qty}？\n（手续费由卖家承担）")
+                    .setPositiveButton("购买") { _, _ -> doBuy(item) }
                     .setNegativeButton("取消", null)
                     .show()
             }
-        }
-        return tv
+        })
+        card.addView(row)
+        return card
     }
 
     private fun doBuy(item: ListingItem) {

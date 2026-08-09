@@ -36,14 +36,21 @@ class AnnouncementActivity : AppCompatActivity() {
                         return@launch
                     }
                     list.forEach { a ->
-                        val card = LinearLayout(this@AnnouncementActivity).apply {
+                        val card = com.google.android.material.card.MaterialCardView(this@AnnouncementActivity).apply {
+                            radius = dp(14).toFloat()
+                            elevation = dp(1).toFloat()
+                            setCardBackgroundColor(Color.WHITE)
+                            strokeColor = Color.parseColor("#E2E6EF")
+                            strokeWidth = 1
+                        }
+                        val inner = LinearLayout(this@AnnouncementActivity).apply {
                             orientation = LinearLayout.VERTICAL
                             setPadding(dp(12), dp(10), dp(12), dp(10))
-                            setBackgroundColor(Color.parseColor("#0C1120"))
                         }
-                        card.addView(text(a.title, 15f, Color.parseColor("#F0C060"), true))
-                        card.addView(text(a.content, 13f, Color.parseColor("#8890B0")))
-                        card.addView(text(a.created_at.take(10), 11f, Color.parseColor("#4A5070")))
+                        inner.addView(text(a.title, 15f, Color.parseColor("#1A1D26"), true))
+                        inner.addView(text(a.content, 13f, Color.parseColor("#374151")))
+                        inner.addView(text(a.created_at.take(10), 11f, Color.parseColor("#9CA3AF")))
+                        card.addView(inner)
                         val lp = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -56,7 +63,7 @@ class AnnouncementActivity : AppCompatActivity() {
         }
     }
 
-    private fun text(txt: String, size: Float = 14f, color: Int = Color.WHITE, bold: Boolean = false): TextView {
+    private fun text(txt: String, size: Float = 14f, color: Int = Color.parseColor("#1A1D26"), bold: Boolean = false): TextView {
         return TextView(this).apply {
             text = txt
             textSize = size
