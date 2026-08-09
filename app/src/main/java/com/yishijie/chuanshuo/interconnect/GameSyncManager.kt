@@ -208,6 +208,7 @@ class GameSyncManager private constructor(
                         put("dur", it.dur)
                         put("maxDur", it.max_dur)
                         put("category", it.category)
+                        put("created_at", it.created_at)
                         if (it.pet != null) put("pet", JSONObject(it.pet.toString()))
                     })
                 }
