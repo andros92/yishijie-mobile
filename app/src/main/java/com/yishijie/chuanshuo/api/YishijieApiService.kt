@@ -98,6 +98,13 @@ interface YishijieApiService {
         @Query("apiKey") apiKey: String
     ): Response<PvpTargetsResponse>
 
+    @GET("/api/yishijie/pvp/matchmake")
+    suspend fun pvpMatchmake(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<PvpTargetsResponse>
+
     @GET("/api/yishijie/pvp/defender")
     suspend fun pvpDefender(
         @Query("playerId") playerId: String,

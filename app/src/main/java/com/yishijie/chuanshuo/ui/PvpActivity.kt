@@ -50,9 +50,9 @@ class PvpActivity : AppCompatActivity() {
         binding.btnCreateRoom.setOnClickListener { createRoom() }
         binding.btnJoinRoom.setOnClickListener { joinRoom() }
         binding.btnRoomFight.setOnClickListener { fightRoom() }
+        binding.btnStartMatch.setOnClickListener { startMatchmaking() }
 
         loadRating()
-        loadTargets()
     }
 
     override fun onDestroy() {
@@ -69,7 +69,7 @@ class PvpActivity : AppCompatActivity() {
 
     private fun switchTab(tab: Int) {
         val match = tab == 0
-        binding.llMatch.visibility = if (match) android.view.View.VISIBLE else android.view.View.GONE
+        binding.llMatchArea.visibility = if (match) android.view.View.VISIBLE else android.view.View.GONE
         binding.llRoom.visibility = if (match) android.view.View.GONE else android.view.View.VISIBLE
         binding.tabMatch.background = resources.getDrawable(
             if (match) com.yishijie.chuanshuo.R.drawable.bg_btn_gold else com.yishijie.chuanshuo.R.drawable.bg_chip, theme
@@ -96,24 +96,32 @@ class PvpActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadTargets() {
+    /**
+     * 开始匹配：按 Elo 从服务器取 5 个段位最接近的对手（参照垃圾佬 battle_match）
+     */
+    private fun startMatchmaking() {
         val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
         binding.llMatch.removeAllViews()
-        binding.llMatch.addView(text("加载中...", 14f, Color.parseColor("#9AA3C0")))
+        binding.llMatch.addView(text("正在匹配对手...", 14f, Color.parseColor("#9AA3C0")))
         lifecycleScope.launch {
-            when (val r = ApiClient.safeApiCall { ApiClient.api.pvpTargets(c.first, c.second, c.third) }) {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.pvpMatchmake(c.first, c.second, c.third) }) {
                 is ApiResult.Success -> {
                     binding.llMatch.removeAllViews()
                     val list = r.data?.data ?: emptyList()
                     if (list.isEmpty()) {
-                        binding.llMatch.addView(text("暂无对战目标", 14f, Color.parseColor("#9AA3C0")))
+                        binding.llMatch.addView(text("暂无可匹配的对手，稍后再试", 14f, Color.parseColor("#9AA3C0")))
+                        binding.btnStartMatch.text = "重新匹配"
                         return@launch
                     }
+                    binding.llMatch.addView(
+                        text("已匹配 ${list.size} 位对手（段位接近），点“挑战”开战", 13f, Color.parseColor("#9AA3C0"))
+                    )
                     list.forEach { t -> binding.llMatch.addView(targetRow(t)) }
+                    binding.btnStartMatch.text = "重新匹配"
                 }
                 is ApiResult.Error -> {
                     binding.llMatch.removeAllViews()
-                    binding.llMatch.addView(text("加载失败：${r.message}", 14f, Color.parseColor("#FF6B7A")))
+                    binding.llMatch.addView(text("匹配失败：${r.message}", 14f, Color.parseColor("#FF6B7A")))
                 }
             }
         }

@@ -147,7 +147,12 @@ class HomeFragment : Fragment() {
     private fun refreshAccountUI() {
         val id = deviceManager.getCurrentPlayerId()
         val name = deviceManager.getCurrentPlayerName()
-        binding.tvAccount.text = if (id != null) "账号：$name（$id）" else "未注册"
+        val loggedIn = id != null
+        binding.tvAccount.text = if (loggedIn) "账号：$name（$id）" else "未注册"
+        // 已有账号后收起注册/登录，不再常驻碍眼
+        binding.etName.visibility = if (loggedIn) android.view.View.GONE else android.view.View.VISIBLE
+        binding.btnRegister.visibility = if (loggedIn) android.view.View.GONE else android.view.View.VISIBLE
+        binding.btnLogin.visibility = if (loggedIn) android.view.View.GONE else android.view.View.VISIBLE
         binding.tvConnDetail.text = "设备指纹：${deviceManager.getDeviceFingerprint() ?: "未知（需连接手环）"}"
     }
 
