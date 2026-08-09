@@ -35,7 +35,8 @@ data class LoginResponse(
 data class SaveUploadRequest(
     val deviceFingerprint: String,
     val apiKey: String,
-    val data: JsonObject
+    val data: JsonObject,
+    val deviceTime: Long = 0
 )
 
 data class SaveResponse(
@@ -55,6 +56,7 @@ data class ExchangeListRequest(
     val qty: Int,
     val price: Int,
     val uid: String = "",
+    val petCaseId: String = "",
     val quality: String? = null,
     val affixes: List<String>? = null,
     val gem: String? = null,

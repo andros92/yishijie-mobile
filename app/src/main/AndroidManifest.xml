@@ -38,6 +38,11 @@
             android:name=".ui.SaveManagerActivity"
             android:exported="false" />
 
+        <!-- 交易所浏览页（只读，交易仅手环可操作） -->
+        <activity
+            android:name=".ui.ExchangeBrowseActivity"
+            android:exported="false" />
+
         <!-- 桥接中心页面 -->
         <activity
             android:name=".ui.BridgeActivity"

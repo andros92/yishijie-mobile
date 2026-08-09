@@ -115,6 +115,7 @@ class HomeFragment : Fragment() {
             })
         }
         binding.btnSave.setOnClickListener { startActivity(Intent(requireContext(), SaveManagerActivity::class.java)) }
+        binding.btnExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
         binding.btnAnnouncements.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
         binding.btnRecharge.setOnClickListener { (activity as? MainActivity)?.switchTab(MainActivity.TAB_RECHARGE) }
     }

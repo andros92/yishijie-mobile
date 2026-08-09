@@ -172,7 +172,8 @@ class GameSyncManager private constructor(
     private suspend fun handleReqUploadSave(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val save = json.optJSONObject("gameData") ?: json.optJSONObject("data")
-        val ok = if (save != null) uploadSaveToServer(gsonObj(save.toString())) else false
+        val deviceTime = json.optLong("deviceTime", 0)
+        val ok = if (save != null) uploadSaveToServer(gsonObj(save.toString()), deviceTime) else false
         sendResponse(reqId, "save_uploaded", JSONObject().put("success", ok))
     }
 
@@ -231,6 +232,7 @@ class GameSyncManager private constructor(
             img = json.optString("itemImg", ""),
             qty = json.optInt("qty", 1), price = json.optInt("price", 0),
             uid = json.optString("uid", ""),
+            petCaseId = json.optString("petCaseId", ""),
             quality = if (json.has("quality")) json.optString("quality") else null,
             gem = if (json.has("gem")) json.optString("gem") else null,
             dur = json.optInt("dur", 0), maxDur = json.optInt("maxDur", 0),
@@ -568,12 +570,12 @@ class GameSyncManager private constructor(
         }
     }
 
-    suspend fun uploadSaveToServer(save: JsonObject?): Boolean {
+    suspend fun uploadSaveToServer(save: JsonObject?, deviceTime: Long = 0): Boolean {
         if (save == null) return false
         val playerId = deviceManager.getCurrentPlayerId() ?: return false
         val fp = deviceManager.getDeviceFingerprint() ?: return false
         val key = ApiClient.apiKey ?: return false
-        return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, SaveUploadRequest(fp, key, save)) }) {
+        return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, SaveUploadRequest(fp, key, save, deviceTime)) }) {
             is ApiResult.Success -> r.data?.success == true
             is ApiResult.Error -> {
                 Log.e(TAG, "上传存档失败: ${r.message}")
