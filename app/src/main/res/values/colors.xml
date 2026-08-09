@@ -1,43 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 主题色 - 清爽蓝 -->
-    <color name="primary">#2563EB</color>
-    <color name="primary_dark">#1D4ED8</color>
-    <color name="primary_light">#60A5FA</color>
+    <!-- 主题色 - 高级深色：靛蓝主色 + 金色点缀 -->
+    <color name="primary">#7B8CFF</color>
+    <color name="primary_dark">#5A6BE8</color>
+    <color name="primary_light">#A5B0FF</color>
 
-    <!-- 强调色 - 靛蓝 -->
-    <color name="accent">#4F46E5</color>
-    <color name="accent_dark">#4338CA</color>
-    <color name="accent_light">#818CF8</color>
+    <!-- 强调色 - 金色 -->
+    <color name="accent">#E8B84A</color>
+    <color name="accent_dark">#C8962F</color>
+    <color name="accent_light">#F5CF6E</color>
 
-    <!-- 背景层次（白色大厂风） -->
-    <color name="background">#F5F6FA</color>
-    <color name="background_card">#FFFFFF</color>
-    <color name="surface">#F0F2F8</color>
-    <color name="surface_light">#E8EBF3</color>
-    <color name="surface_border">#E2E6EF</color>
+    <!-- 背景层次（深空渐变，分层） -->
+    <color name="background">#0B0F1F</color>
+    <color name="background_card">#14FFFFFF</color>
+    <color name="surface">#101631</color>
+    <color name="surface_light">#1A2242</color>
+    <color name="surface_border">#26FFFFFF</color>
+    <color name="glass_card">#14FFFFFF</color>
+    <color name="glass_border">#2EFFFFFF</color>
 
     <!-- 文字 -->
-    <color name="text_primary">#1A1D26</color>
-    <color name="text_secondary">#6B7280</color>
-    <color name="text_hint">#9CA3AF</color>
-    <color name="text_gold">#D97706</color>
+    <color name="text_primary">#F4F6FF</color>
+    <color name="text_secondary">#9AA3C0</color>
+    <color name="text_hint">#5D6B8C</color>
+    <color name="text_gold">#F5C453</color>
 
     <!-- 状态色 -->
-    <color name="success">#059669</color>
-    <color name="warning">#D97706</color>
-    <color name="error">#DC2626</color>
+    <color name="success">#4FD8A8</color>
+    <color name="warning">#F5B94A</color>
+    <color name="error">#FF6B7A</color>
 
     <!-- 排行榜 -->
-    <color name="rank_gold">#F59E0B</color>
-    <color name="rank_silver">#94A3B8</color>
-    <color name="rank_bronze">#D97706</color>
+    <color name="rank_gold">#F5C453</color>
+    <color name="rank_silver">#B8C2E0</color>
+    <color name="rank_bronze">#D9925A</color>
 
     <!-- 资源色 -->
-    <color name="res_gold">#D97706</color>
-    <color name="res_diamond">#0891B2</color>
-    <color name="res_key">#EA580C</color>
-    <color name="res_source">#7C3AED</color>
-    <color name="res_daoyun">#E11D48</color>
-    <color name="res_wine">#DB2777</color>
+    <color name="res_gold">#F5C453</color>
+    <color name="res_diamond">#7AD8FF</color>
+    <color name="res_key">#FFB06A</color>
+    <color name="res_source">#B99CFF</color>
+    <color name="res_daoyun">#FF8FA0</color>
+    <color name="res_wine">#FF9AD8</color>
 </resources>

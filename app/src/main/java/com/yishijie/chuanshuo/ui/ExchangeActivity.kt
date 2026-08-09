@@ -63,7 +63,7 @@ class ExchangeActivity : AppCompatActivity() {
         return TextView(this).apply {
             this.text = text
             textSize = 14f
-            setTextColor(Color.parseColor("#9CA3AF"))
+            setTextColor(Color.parseColor("#5D6B8C"))
             gravity = Gravity.CENTER
             setPadding(0, dp(24), 0, dp(24))
         }
@@ -77,8 +77,8 @@ class ExchangeActivity : AppCompatActivity() {
             ).apply { bottomMargin = dp(10) }
             radius = dp(14).toFloat()
             elevation = dp(1).toFloat()
-            setCardBackgroundColor(Color.WHITE)
-            strokeColor = Color.parseColor("#E2E6EF")
+            setCardBackgroundColor(Color.parseColor("#1A2242"))
+            strokeColor = Color.parseColor("#2EFFFFFF")
             strokeWidth = 1
         }
         val row = LinearLayout(this).apply {
@@ -93,13 +93,13 @@ class ExchangeActivity : AppCompatActivity() {
         info.addView(TextView(this).apply {
             text = title
             textSize = 15f
-            setTextColor(Color.parseColor("#1A1D26"))
+            setTextColor(Color.parseColor("#F4F6FF"))
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         })
         info.addView(TextView(this).apply {
             text = if (item.item_uid.isNotEmpty()) "UID ${item.item_uid} · ${item.price} 金币" else "${item.price} 金币"
             textSize = 12f
-            setTextColor(Color.parseColor("#6B7280"))
+            setTextColor(Color.parseColor("#9AA3C0"))
             setPadding(0, dp(3), 0, 0)
         })
         info.setOnClickListener { showItemDetail(item) }
@@ -113,7 +113,7 @@ class ExchangeActivity : AppCompatActivity() {
             setPadding(dp(14), dp(8), dp(14), dp(8))
             background = android.graphics.drawable.GradientDrawable().apply {
                 cornerRadius = dp(8).toFloat()
-                setColor(Color.parseColor("#2563EB"))
+                setColor(Color.parseColor("#7B8CFF"))
             }
             setOnClickListener {
                 val me = deviceManager.getCurrentPlayerId()

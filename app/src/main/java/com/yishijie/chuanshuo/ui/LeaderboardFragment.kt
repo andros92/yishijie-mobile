@@ -53,9 +53,9 @@ class LeaderboardFragment : Fragment() {
         binding.tabLevel.setBackgroundResource(if (t == "level") R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
         binding.tabPet.setBackgroundResource(if (t == "pet") R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
         binding.tabTower.setBackgroundResource(if (t == "tower") R.drawable.bg_tab_selected else R.drawable.bg_tab_unselected)
-        binding.tabLevel.setTextColor(Color.parseColor(if (t == "level") "#FFFFFF" else "#6B7280"))
-        binding.tabPet.setTextColor(Color.parseColor(if (t == "pet") "#FFFFFF" else "#6B7280"))
-        binding.tabTower.setTextColor(Color.parseColor(if (t == "tower") "#FFFFFF" else "#6B7280"))
+        binding.tabLevel.setTextColor(Color.parseColor(if (t == "level") "#FFFFFF" else "#9AA3C0"))
+        binding.tabPet.setTextColor(Color.parseColor(if (t == "pet") "#FFFFFF" else "#9AA3C0"))
+        binding.tabTower.setTextColor(Color.parseColor(if (t == "tower") "#FFFFFF" else "#9AA3C0"))
         load()
     }
 
@@ -95,7 +95,7 @@ class LeaderboardFragment : Fragment() {
         return TextView(requireContext()).apply {
             this.text = text
             textSize = 14f
-            setTextColor(Color.parseColor("#9CA3AF"))
+            setTextColor(Color.parseColor("#5D6B8C"))
             gravity = Gravity.CENTER
             setPadding(0, dp(24), 0, dp(24))
         }
@@ -109,8 +109,8 @@ class LeaderboardFragment : Fragment() {
             ).apply { bottomMargin = dp(10) }
             radius = dp(14).toFloat()
             elevation = dp(1).toFloat()
-            setCardBackgroundColor(Color.WHITE)
-            strokeColor = Color.parseColor("#E2E6EF")
+            setCardBackgroundColor(Color.parseColor("#1A2242"))
+            strokeColor = Color.parseColor("#2EFFFFFF")
             strokeWidth = 1
         }
         val row = LinearLayout(requireContext()).apply {
@@ -123,10 +123,10 @@ class LeaderboardFragment : Fragment() {
             textSize = 16f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setTextColor(when (rank) {
-                1 -> Color.parseColor("#F59E0B")
-                2 -> Color.parseColor("#94A3B8")
-                3 -> Color.parseColor("#D97706")
-                else -> Color.parseColor("#9CA3AF")
+                1 -> Color.parseColor("#F5C453")
+                2 -> Color.parseColor("#B8C2E0")
+                3 -> Color.parseColor("#D9925A")
+                else -> Color.parseColor("#5D6B8C")
             })
             gravity = Gravity.CENTER
             setWidth(dp(32))
@@ -134,14 +134,14 @@ class LeaderboardFragment : Fragment() {
         row.addView(TextView(requireContext()).apply {
             text = name
             textSize = 15f
-            setTextColor(Color.parseColor("#1A1D26"))
+            setTextColor(Color.parseColor("#F4F6FF"))
             setTypeface(null, android.graphics.Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
         row.addView(TextView(requireContext()).apply {
             text = value
             textSize = 13f
-            setTextColor(Color.parseColor("#2563EB"))
+            setTextColor(Color.parseColor("#7B8CFF"))
             setTypeface(null, android.graphics.Typeface.BOLD)
         })
         card.addView(row)

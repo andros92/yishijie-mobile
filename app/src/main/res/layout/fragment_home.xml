@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_app"
     android:fillViewport="true">
 
     <LinearLayout
@@ -13,6 +13,48 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="24dp">
+
+        <!-- 主视觉横幅 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="190dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/background"
+            android:layout_marginTop="12dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bg_hero_home"
+                android:contentDescription="异世界传说主视觉" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_hero_overlay"
+                android:orientation="vertical"
+                android:gravity="bottom"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="异世界传说"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="手环 · 存档 · 交易 · 竞技"
+                    android:textSize="12sp"
+                    android:textColor="#D8DFFF"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- 品牌区 -->
         <LinearLayout
@@ -71,10 +113,10 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/background_card"
+            app:cardBackgroundColor="@color/glass_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/surface_border"
+            app:strokeColor="@color/glass_border"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -133,10 +175,10 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/background_card"
+            app:cardBackgroundColor="@color/glass_card"
             app:cardCornerRadius="16dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/surface_border"
+            app:strokeColor="@color/glass_border"
             app:strokeWidth="1dp"
             android:layout_marginTop="12dp">
 
@@ -234,10 +276,10 @@
                 android:layout_height="96dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/background_card"
+                app:cardBackgroundColor="@color/glass_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeColor="@color/surface_border"
+                app:strokeColor="@color/glass_border"
                 app:strokeWidth="1dp"
                 android:clickable="true"
                 android:focusable="true">
@@ -270,10 +312,10 @@
                 android:layout_width="0dp"
                 android:layout_height="96dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/background_card"
+                app:cardBackgroundColor="@color/glass_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeColor="@color/surface_border"
+                app:strokeColor="@color/glass_border"
                 app:strokeWidth="1dp"
                 android:clickable="true"
                 android:focusable="true">
@@ -314,10 +356,10 @@
                 android:layout_height="96dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/background_card"
+                app:cardBackgroundColor="@color/glass_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeColor="@color/surface_border"
+                app:strokeColor="@color/glass_border"
                 app:strokeWidth="1dp"
                 android:clickable="true"
                 android:focusable="true">
@@ -350,10 +392,10 @@
                 android:layout_width="0dp"
                 android:layout_height="96dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="@color/background_card"
+                app:cardBackgroundColor="@color/glass_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeColor="@color/surface_border"
+                app:strokeColor="@color/glass_border"
                 app:strokeWidth="1dp"
                 android:clickable="true"
                 android:focusable="true">
