@@ -54,6 +54,7 @@ data class ExchangeListRequest(
     val img: String = "",
     val qty: Int,
     val price: Int,
+    val uid: String = "",
     val quality: String? = null,
     val affixes: List<String>? = null,
     val gem: String? = null,

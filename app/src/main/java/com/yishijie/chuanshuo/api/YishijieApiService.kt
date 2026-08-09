@@ -29,7 +29,10 @@ interface YishijieApiService {
 
     // ========== 交易所 ==========
     @POST("/api/yishijie/exchange/list")
-    suspend fun exchangeList(@Body request: ExchangeListRequest): Response<ExchangeListResponse>
+    suspend fun exchangeList(
+        @Body request: ExchangeListRequest,
+        @Header("X-Yishijie-Channel") channel: String = "companion"
+    ): Response<ExchangeListResponse>
 
     @GET("/api/yishijie/exchange/listings")
     suspend fun exchangeListings(
@@ -44,10 +47,16 @@ interface YishijieApiService {
     ): Response<ListingsResponse>
 
     @POST("/api/yishijie/exchange/buy")
-    suspend fun exchangeBuy(@Body request: ExchangeBuyRequest): Response<BaseResponse>
+    suspend fun exchangeBuy(
+        @Body request: ExchangeBuyRequest,
+        @Header("X-Yishijie-Channel") channel: String = "companion"
+    ): Response<BaseResponse>
 
     @POST("/api/yishijie/exchange/cancel")
-    suspend fun exchangeCancel(@Body request: ExchangeCancelRequest): Response<BaseResponse>
+    suspend fun exchangeCancel(
+        @Body request: ExchangeCancelRequest,
+        @Header("X-Yishijie-Channel") channel: String = "companion"
+    ): Response<BaseResponse>
 
     @GET("/api/yishijie/exchange/history")
     suspend fun exchangeHistory(@Query("playerId") playerId: String): Response<TradeHistoryResponse>

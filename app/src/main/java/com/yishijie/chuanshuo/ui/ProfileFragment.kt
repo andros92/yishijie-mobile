@@ -37,7 +37,6 @@ class ProfileFragment : Fragment() {
         binding.btnCopyId.setOnClickListener { copyId() }
         binding.rowRename.setOnClickListener { rename() }
         binding.rowSave.setOnClickListener { startActivity(Intent(requireContext(), SaveManagerActivity::class.java)) }
-        binding.rowExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeActivity::class.java)) }
         binding.rowBridge.setOnClickListener { startActivity(Intent(requireContext(), BridgeActivity::class.java)) }
         binding.rowAnnouncement.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
         refresh()

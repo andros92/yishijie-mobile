@@ -230,6 +230,7 @@ class GameSyncManager private constructor(
             key = json.optString("itemKey"), name = json.optString("itemName"),
             img = json.optString("itemImg", ""),
             qty = json.optInt("qty", 1), price = json.optInt("price", 0),
+            uid = json.optString("uid", ""),
             quality = if (json.has("quality")) json.optString("quality") else null,
             gem = if (json.has("gem")) json.optString("gem") else null,
             dur = json.optInt("dur", 0), maxDur = json.optInt("maxDur", 0),
