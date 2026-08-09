@@ -43,11 +43,6 @@
             android:name=".ui.ExchangeActivity"
             android:exported="false" />
 
-        <!-- 充值页面 -->
-        <activity
-            android:name=".ui.RechargeActivity"
-            android:exported="false" />
-
         <!-- 桥接中心页面 -->
         <activity
             android:name=".ui.BridgeActivity"
