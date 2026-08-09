@@ -4,16 +4,23 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.yishijie.chuanshuo.BuildConfig
+import com.yishijie.chuanshuo.api.ApiClient
+import com.yishijie.chuanshuo.api.ApiResult
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.FragmentHomeBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
 import com.yishijie.chuanshuo.interconnect.InterconnManager
 import com.yishijie.chuanshuo.service.CompanionService
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
@@ -22,6 +29,7 @@ class HomeFragment : Fragment() {
     private lateinit var deviceManager: DeviceManager
     private lateinit var interconnManager: InterconnManager
     private lateinit var syncManager: GameSyncManager
+    private var updateChecked = false
 
     private val connectionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -51,6 +59,10 @@ class HomeFragment : Fragment() {
         super.onResume()
         requireContext().registerReceiver(connectionReceiver, IntentFilter(CompanionService.ACTION_CONNECTION_STATUS))
         refreshAccountUI()
+        if (!updateChecked) {
+            updateChecked = true
+            checkUpdate()
+        }
     }
 
     override fun onPause() {
@@ -112,5 +124,32 @@ class HomeFragment : Fragment() {
         val name = deviceManager.getCurrentPlayerName()
         binding.tvAccount.text = if (id != null) "账号：$name（$id）" else "未注册"
         binding.tvConnDetail.text = "设备指纹：${deviceManager.getDeviceFingerprint() ?: "未知（需连接手环）"}"
+    }
+
+    private fun checkUpdate() {
+        lifecycleScope.launch {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.version() }) {
+                is ApiResult.Success -> {
+                    val v = r.data
+                    if (v != null && v.versionCode > BuildConfig.VERSION_CODE) {
+                        val builder = AlertDialog.Builder(requireContext())
+                            .setTitle("发现新版本 ${v.versionName}")
+                            .setMessage("更新内容：\n${v.updateNotes.ifEmpty { "修复与优化" }}")
+                            .setNegativeButton("以后再说", null)
+                        if (!v.downloadUrl.isNullOrEmpty()) {
+                            builder.setPositiveButton("立即更新") { _, _ ->
+                                try {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(v.downloadUrl)))
+                                } catch (e: Exception) {
+                                    binding.tvToast.text = "无法打开下载链接"
+                                }
+                            }
+                        }
+                        builder.show()
+                    }
+                }
+                is ApiResult.Error -> {}
+            }
+        }
     }
 }

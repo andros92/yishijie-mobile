@@ -8,10 +8,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.yishijie.chuanshuo.api.ApiClient
+import com.yishijie.chuanshuo.api.ApiResult
+import com.yishijie.chuanshuo.api.RenameRequest
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.FragmentProfileBinding
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -28,6 +35,7 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         deviceManager = DeviceManager.getInstance(requireContext())
         binding.btnCopyId.setOnClickListener { copyId() }
+        binding.rowRename.setOnClickListener { rename() }
         binding.rowSave.setOnClickListener { startActivity(Intent(requireContext(), SaveManagerActivity::class.java)) }
         binding.rowExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeActivity::class.java)) }
         binding.rowBridge.setOnClickListener { startActivity(Intent(requireContext(), BridgeActivity::class.java)) }
@@ -62,5 +70,49 @@ class ProfileFragment : Fragment() {
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("playerId", id))
         Toast.makeText(requireContext(), "玩家 ID 已复制：$id", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun rename() {
+        val me = deviceManager.getCurrentPlayerId() ?: run { Toast.makeText(requireContext(), "请先登录账号", Toast.LENGTH_SHORT).show(); return }
+        val input = EditText(requireContext()).apply {
+            hint = "新昵称（2-12字）"
+            setText(deviceManager.getCurrentPlayerName() ?: "")
+            setSingleLine(true)
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("修改昵称")
+            .setMessage("每月限改一次，不能使用违禁词")
+            .setView(input)
+            .setPositiveButton("确定") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.length < 2 || name.length > 12) {
+                    Toast.makeText(requireContext(), "昵称需 2-12 个字符", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                doRename(me, name)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun doRename(playerId: String, newName: String) {
+        val fp = deviceManager.getDeviceFingerprint() ?: run { Toast.makeText(requireContext(), "请先连接手环", Toast.LENGTH_SHORT).show(); return }
+        val key = ApiClient.apiKey ?: run { Toast.makeText(requireContext(), "缺少 apiKey，请重新登录", Toast.LENGTH_SHORT).show(); return }
+        lifecycleScope.launch {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.rename(RenameRequest(playerId, fp, key, newName)) }) {
+                is ApiResult.Success -> {
+                    val d = r.data
+                    if (d?.success == true) {
+                        deviceManager.updatePlayerName(playerId, d.playerName.ifEmpty { newName })
+                        deviceManager.setNameChanged(true)
+                        refresh()
+                        Toast.makeText(requireContext(), d.message.ifEmpty { "改名成功" }, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), d?.error ?: "改名失败", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                is ApiResult.Error -> Toast.makeText(requireContext(), "改名失败：${r.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

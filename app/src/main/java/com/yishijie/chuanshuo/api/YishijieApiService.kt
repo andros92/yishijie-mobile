@@ -116,6 +116,9 @@ interface YishijieApiService {
     @GET("/api/yishijie/version")
     suspend fun version(): Response<VersionResponse>
 
+    @POST("/api/yishijie/rename")
+    suspend fun rename(@Body request: RenameRequest): Response<RenameResponse>
+
     // 通用存档负载（手环整包存档）
     @GET("/api/yishijie/saves/{playerId}/raw")
     suspend fun downloadRawSave(

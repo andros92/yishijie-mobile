@@ -309,7 +309,24 @@ data class PaymentOrdersResponse(
 
 data class VersionResponse(
     val success: Boolean = false,
-    val version: String = "",
+    val versionCode: Int = 1,
+    val versionName: String = "",
+    val downloadUrl: String = "",
+    val updateNotes: String = "",
+    val error: String? = null
+)
+
+data class RenameRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val newName: String
+)
+
+data class RenameResponse(
+    val success: Boolean = false,
+    val playerName: String = "",
+    val message: String = "",
     val error: String? = null
 )
 
