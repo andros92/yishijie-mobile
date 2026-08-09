@@ -76,6 +76,7 @@ data class ListingItem(
     val seller_name: String = "",
     val item_key: String = "",
     val item_name: String = "",
+    val item_uid: String = "",
     val item_img: String = "",
     val category: String = "item",
     val pet: JsonObject? = null,

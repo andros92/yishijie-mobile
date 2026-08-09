@@ -97,11 +97,12 @@ class ExchangeActivity : AppCompatActivity() {
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         })
         info.addView(TextView(this).apply {
-            text = "${item.price} 金币 · ${item.seller_name}"
+            text = if (item.item_uid.isNotEmpty()) "UID ${item.item_uid} · ${item.price} 金币" else "${item.price} 金币"
             textSize = 12f
             setTextColor(Color.parseColor("#6B7280"))
             setPadding(0, dp(3), 0, 0)
         })
+        info.setOnClickListener { showItemDetail(item) }
         row.addView(info)
         row.addView(TextView(this).apply {
             text = "购买"
@@ -127,6 +128,24 @@ class ExchangeActivity : AppCompatActivity() {
         })
         card.addView(row)
         return card
+    }
+
+    private fun showItemDetail(item: ListingItem) {
+        val sb = StringBuilder()
+        sb.append("物品：${item.item_name}\n")
+        if (item.item_uid.isNotEmpty()) sb.append("ID：${item.item_uid}\n")
+        if (item.quality.isNotEmpty()) sb.append("品质：${item.quality}\n")
+        if (item.gem.isNotEmpty()) sb.append("镶嵌：${item.gem}\n")
+        if (item.dur > 0) sb.append("耐久：${item.dur}/${item.max_dur}\n")
+        sb.append("数量：${item.qty}\n")
+        sb.append("价格：${item.price} 金币\n")
+        sb.append("卖家：${item.seller_name}")
+        AlertDialog.Builder(this)
+            .setTitle("物品详情")
+            .setMessage(sb.toString())
+            .setPositiveButton("购买") { _, _ -> doBuy(item) }
+            .setNeutralButton("取消", null)
+            .show()
     }
 
     private fun doBuy(item: ListingItem) {
