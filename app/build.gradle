@@ -41,19 +41,11 @@ android {
             minifyEnabled false
         }
 
-        // 本地混淆测试：gradlew assembleConfused
-        confused {
-            initWith debug
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-
         release {
             signingConfig signingConfigs.release
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 关闭 R8 混淆/裁剪：小米穿戴 SDK 反射依赖多，混淆容易把 API 模型或回调改坏
+            minifyEnabled false
+            shrinkResources false
         }
     }
 
