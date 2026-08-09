@@ -192,7 +192,15 @@ class GameSyncManager private constructor(
         val reqId = json.optInt("_reqId", 0)
         val page = json.optInt("page", 1)
         val cat = json.optString("category", "all")
-        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeListings(page, 20, cat) }) {
+        val keyword = json.optString("keyword", "").ifEmpty { null }
+        val mine = json.optBoolean("mine", false)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint()
+        val key = ApiClient.apiKey
+        when (val r = ApiClient.safeApiCall {
+            if (mine) ApiClient.api.exchangeListings(page, 20, cat, keyword, true, me, fp, key)
+            else ApiClient.api.exchangeListings(page, 20, cat, keyword)
+        }) {
             is ApiResult.Success -> {
                 val arr = JSONArray()
                 (r.data?.data ?: emptyList()).forEach { it ->
@@ -212,7 +220,10 @@ class GameSyncManager private constructor(
                         if (it.pet != null) put("pet", JSONObject(it.pet.toString()))
                     })
                 }
-                sendResponse(reqId, "exchange_listings", JSONObject().put("data", arr))
+                val body = JSONObject().put("data", arr)
+                body.put("total", r.data?.total ?: 0)
+                body.put("page", page)
+                sendResponse(reqId, "exchange_listings", body)
             }
             is ApiResult.Error -> sendResponse(reqId, "exchange_listings", JSONObject().put("error", r.message))
         }
