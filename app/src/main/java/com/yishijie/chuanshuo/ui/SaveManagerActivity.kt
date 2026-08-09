@@ -31,10 +31,12 @@ class SaveManagerActivity : AppCompatActivity() {
 
         binding.btnDownloadServer.setOnClickListener {
             if (deviceManager.getCurrentPlayerId() == null) { status("请先登录账号"); return@setOnClickListener }
+            if (!deviceManager.canRestoreToday()) { status("今天已恢复过存档，每天限 1 次，明天再来"); return@setOnClickListener }
             lifecycleScope.launch {
                 status("下载中...")
                 val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
                 if (data != null) {
+                    deviceManager.markRestoredToday()
                     status("已从服务器下载存档")
                     syncManager.uploadSaveToBand(JSONObject(data.toString()), object : GameSyncManager.SaveCallback {
                         override fun onSaveUploaded(success: Boolean, message: String) {}

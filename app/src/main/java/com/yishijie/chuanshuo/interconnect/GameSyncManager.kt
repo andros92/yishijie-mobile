@@ -90,6 +90,10 @@ class GameSyncManager private constructor(
             "req_pvp_defender" -> scope.launch { handleReqPvpDefender(json) }
             "req_pvp_report" -> scope.launch { handleReqPvpReport(json) }
             "req_pvp_rating" -> scope.launch { handleReqPvpRating(json) }
+            "req_pvp_room_create" -> scope.launch { handleReqPvpRoomCreate(json) }
+            "req_pvp_room_join" -> scope.launch { handleReqPvpRoomJoin(json) }
+            "req_pvp_room_status" -> scope.launch { handleReqPvpRoomStatus(json) }
+            "req_pvp_room_fight" -> scope.launch { handleReqPvpRoomFight(json) }
             "req_recharge_order" -> scope.launch { handleReqRechargeOrder(json) }
             "game_data" -> {
                 // 手环推送整包存档：自动上传服务器
@@ -469,8 +473,60 @@ class GameSyncManager private constructor(
                 put("rating", r.data?.rating ?: 1000)
                 put("wins", r.data?.wins ?: 0)
                 put("losses", r.data?.losses ?: 0)
+                put("dailyLeft", r.data?.dailyLeft ?: 12)
             })
             is ApiResult.Error -> sendResponse(reqId, "pvp_rating", JSONObject().put("error", r.message))
+        }
+    }
+
+    private fun pvpAuthPayload(json: JSONObject): JSONObject? {
+        val me = deviceManager.getCurrentPlayerId() ?: return null
+        val fp = deviceManager.getDeviceFingerprint() ?: return null
+        val key = ApiClient.apiKey ?: return null
+        return JSONObject().apply {
+            put("playerId", me)
+            put("deviceFingerprint", fp)
+            put("apiKey", key)
+            if (json.has("roomCode")) put("roomCode", json.optString("roomCode"))
+        }
+    }
+
+    private suspend fun handleReqPvpRoomCreate(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val body = pvpAuthPayload(json)
+        if (body == null) { sendResponse(reqId, "pvp_room_created", JSONObject().put("error", "手机端未登录账号")); return }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRoomCreate(gsonObj(body.toString())) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_room_created", JSONObject(r.data.toString()))
+            is ApiResult.Error -> sendResponse(reqId, "pvp_room_created", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpRoomJoin(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val body = pvpAuthPayload(json)
+        if (body == null) { sendResponse(reqId, "pvp_room_joined", JSONObject().put("error", "手机端未登录账号")); return }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRoomJoin(gsonObj(body.toString())) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_room_joined", JSONObject(r.data.toString()))
+            is ApiResult.Error -> sendResponse(reqId, "pvp_room_joined", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpRoomStatus(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val code = json.optString("roomCode", "")
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRoomStatus(code) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_room_status", JSONObject(r.data.toString()))
+            is ApiResult.Error -> sendResponse(reqId, "pvp_room_status", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpRoomFight(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val body = pvpAuthPayload(json)
+        if (body == null) { sendResponse(reqId, "pvp_room_fought", JSONObject().put("error", "手机端未登录账号")); return }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRoomFight(gsonObj(body.toString())) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_room_fought", JSONObject(r.data.toString()))
+            is ApiResult.Error -> sendResponse(reqId, "pvp_room_fought", JSONObject().put("error", r.message))
         }
     }
 

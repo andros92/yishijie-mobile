@@ -103,6 +103,19 @@ interface YishijieApiService {
     @GET("/api/yishijie/pvp/rating")
     suspend fun pvpRating(@Query("playerId") playerId: String): Response<PvpRatingResponse>
 
+    // ========== PVP 房间对战 ==========
+    @POST("/api/yishijie/pvp/room/create")
+    suspend fun pvpRoomCreate(@Body body: JsonObject): Response<JsonObject>
+
+    @POST("/api/yishijie/pvp/room/join")
+    suspend fun pvpRoomJoin(@Body body: JsonObject): Response<JsonObject>
+
+    @GET("/api/yishijie/pvp/room/{code}")
+    suspend fun pvpRoomStatus(@Path("code") code: String): Response<JsonObject>
+
+    @POST("/api/yishijie/pvp/room/fight")
+    suspend fun pvpRoomFight(@Body body: JsonObject): Response<JsonObject>
+
     // ========== 爱发电充值 ==========
     @GET("/api/yishijie/payment/afdian-url")
     suspend fun afdianUrl(): Response<AfdianUrlResponse>

@@ -285,6 +285,7 @@ data class PvpRatingResponse(
     val rating: Int = 1000,
     val wins: Int = 0,
     val losses: Int = 0,
+    val dailyLeft: Int = 12,
     val error: String? = null
 )
 

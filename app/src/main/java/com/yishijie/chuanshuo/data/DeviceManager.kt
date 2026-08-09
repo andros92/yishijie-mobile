@@ -7,6 +7,9 @@ import android.os.Build
 import android.provider.Settings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DeviceManager(context: Context) {
 
@@ -20,6 +23,7 @@ class DeviceManager(context: Context) {
         private const val KEY_CURRENT_PLAYER_NAME = "current_player_name"
         private const val KEY_CURRENT_NAME_CHANGED = "current_name_changed"
         private const val KEY_DEVICE_FINGERPRINT = "device_fingerprint"
+        private const val KEY_LAST_RESTORE_DATE = "last_restore_date"
 
         @SuppressLint("StaticFieldLeak")
         @Volatile
@@ -175,5 +179,18 @@ class DeviceManager(context: Context) {
             .remove(KEY_CURRENT_PLAYER_NAME)
             .remove(KEY_CURRENT_NAME_CHANGED)
             .apply()
+    }
+
+    /**
+     * 从服务器恢复存档：每天限 1 次（参照开箱）
+     */
+    fun canRestoreToday(): Boolean {
+        val last = prefs.getString(KEY_LAST_RESTORE_DATE, null) ?: return true
+        val today = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
+        return last != today
+    }
+
+    fun markRestoredToday() {
+        prefs.edit().putString(KEY_LAST_RESTORE_DATE, SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())).apply()
     }
 }
