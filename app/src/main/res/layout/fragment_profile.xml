@@ -161,7 +161,7 @@
                     android:paddingEnd="16dp"
                     android:clickable="true"
                     android:focusable="true">
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" app:srcCompat="@drawable/ic_avatar_default" android:contentDescription="改名" />
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" app:srcCompat="@drawable/icon_rename" android:contentDescription="改名" />
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="修改昵称" android:textSize="15sp" android:textColor="@color/text_primary" android:layout_marginStart="12dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textSize="20sp" android:textColor="@color/text_hint" />
                 </LinearLayout>
@@ -214,7 +214,7 @@
                     android:paddingEnd="16dp"
                     android:clickable="true"
                     android:focusable="true">
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/connection" android:contentDescription="桥接" />
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/icon_bridge" android:contentDescription="桥接" />
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="桥接详情" android:textSize="15sp" android:textColor="@color/text_primary" android:layout_marginStart="12dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textSize="20sp" android:textColor="@color/text_hint" />
                 </LinearLayout>
