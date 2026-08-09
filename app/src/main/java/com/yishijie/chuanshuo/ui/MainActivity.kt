@@ -28,8 +28,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        InterconnManager.getInstance(this)
+        val interconn = InterconnManager.getInstance(this)
         GameSyncManager.getInstance(this)
+        interconn.initialize()
         CompanionService.start(this)
 
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
