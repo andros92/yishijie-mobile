@@ -7,8 +7,8 @@
 -dontwarn kotlin.Unit
 
 # ========== Gson + Retrofit（API 数据模型）==========
--keep class com.junklord.world.api.** { *; }
--keepclassmembers class com.junklord.world.api.** { *; }
+-keep class com.yishijie.chuanshuo.api.** { *; }
+-keepclassmembers class com.yishijie.chuanshuo.api.** { *; }
 
 # Gson 通过 @SerializedName 序列化，保留字段名
 -keepclassmembers,allowobfuscation class * {
@@ -16,14 +16,14 @@
 }
 
 # Retrofit 接口不混淆
--keep interface com.junklord.world.api.JunklordApiService { *; }
+-keep interface com.yishijie.chuanshuo.api.YishijieApiService { *; }
 
 # ========== 自己的全部代码保留（小米 SDK 反射/回调依赖，不可精简）==========
 # -allowaccessmodification 会改变方法可见性，破坏 SDK 反射
 # -mergeinterfacesaggressively 会合并 MessageListener/GameMessageHandler 等接口
 # 导致 instanceof 检查失败 → 连接时好时坏
--keep class com.junklord.world.** { *; }
--keepclassmembers class com.junklord.world.** { *; }
+-keep class com.yishijie.chuanshuo.** { *; }
+-keepclassmembers class com.yishijie.chuanshuo.** { *; }
 
 # ========== 小米穿戴 SDK ==========
 -dontwarn com.xiaomi.xms.**
