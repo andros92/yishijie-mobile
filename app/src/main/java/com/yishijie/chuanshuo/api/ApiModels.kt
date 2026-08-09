@@ -283,6 +283,24 @@ data class PvpReportResponse(
     val error: String? = null
 )
 
+data class PvpMatchRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val targetId: String
+)
+
+data class PvpMatchResponse(
+    val success: Boolean = false,
+    val winner: String = "",
+    val aWin: Boolean = false,
+    val delta: Int = 0,
+    val rating: Int = 0,
+    val dailyLeft: Int = 12,
+    val log: List<String> = emptyList(),
+    val error: String? = null
+)
+
 data class PvpRatingResponse(
     val success: Boolean = false,
     val rating: Int = 1000,

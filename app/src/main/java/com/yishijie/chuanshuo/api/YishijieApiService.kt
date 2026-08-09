@@ -109,6 +109,9 @@ interface YishijieApiService {
     @POST("/api/yishijie/pvp/report")
     suspend fun pvpReport(@Body request: PvpReportRequest): Response<PvpReportResponse>
 
+    @POST("/api/yishijie/pvp/match")
+    suspend fun pvpMatch(@Body request: PvpMatchRequest): Response<PvpMatchResponse>
+
     @GET("/api/yishijie/pvp/rating")
     suspend fun pvpRating(@Query("playerId") playerId: String): Response<PvpRatingResponse>
 

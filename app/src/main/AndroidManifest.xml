@@ -43,6 +43,11 @@
             android:name=".ui.ExchangeBrowseActivity"
             android:exported="false" />
 
+        <!-- PVP 竞技场（纯手机端） -->
+        <activity
+            android:name=".ui.PvpActivity"
+            android:exported="false" />
+
         <!-- 桥接中心页面 -->
         <activity
             android:name=".ui.BridgeActivity"
