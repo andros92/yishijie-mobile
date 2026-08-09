@@ -26,6 +26,7 @@ class BridgeActivity : AppCompatActivity() {
                     val state = intent.getStringExtra(CompanionService.EXTRA_STATE) ?: ""
                     val detail = intent.getStringExtra(CompanionService.EXTRA_DETAIL) ?: ""
                     updateConnectionUI(connected, state, detail)
+                    updateProfileInfo()
                 }
                 CompanionService.ACTION_BRIDGE_STATE -> {
                     val state = intent.getStringExtra(CompanionService.EXTRA_STATE) ?: ""
@@ -35,6 +36,7 @@ class BridgeActivity : AppCompatActivity() {
                     val notifyPermission = intent.getBooleanExtra("notifyPermission", false)
                     val watchConnected = intent.getBooleanExtra("watchConnected", false)
                     updateBridgeStateUI(state, detail, appInstalled, devicePermission, notifyPermission, watchConnected)
+                    updateProfileInfo()
                 }
             }
         }
@@ -61,6 +63,7 @@ class BridgeActivity : AppCompatActivity() {
         registerReceiver(connectionReceiver, filter)
         // 刷新状态
         interconnManager.refreshConnection()
+        updateProfileInfo()
     }
 
     override fun onPause() {

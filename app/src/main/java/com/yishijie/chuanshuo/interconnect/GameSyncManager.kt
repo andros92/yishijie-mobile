@@ -95,6 +95,7 @@ class GameSyncManager private constructor(
             "req_pvp_room_status" -> scope.launch { handleReqPvpRoomStatus(json) }
             "req_pvp_room_fight" -> scope.launch { handleReqPvpRoomFight(json) }
             "req_recharge_order" -> scope.launch { handleReqRechargeOrder(json) }
+            "player_id" -> scope.launch { handlePlayerId(json) }
             "game_data" -> {
                 // 手环推送整包存档：自动上传服务器
                 scope.launch {
@@ -140,6 +141,8 @@ class GameSyncManager private constructor(
             sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹为空"))
             return
         }
+        // 先记录手环指纹，后续所有 API 校验都依赖它
+        deviceManager.setDeviceFingerprint(fp)
         val request = RegisterRequest(name, fp, deviceManager.getPhoneFingerprint())
         when (val r = ApiClient.safeApiCall { ApiClient.api.register(request) }) {
             is ApiResult.Success -> {
@@ -165,6 +168,23 @@ class GameSyncManager private constructor(
                 }
             }
             is ApiResult.Error -> sendResponse(reqId, "register_result", JSONObject().put("error", r.message))
+        }
+    }
+
+    /**
+     * 手环回传身份（响应 request_player_id）：
+     * 记录手环设备指纹，并同步手环上的账号（手环是唯一身份主体）
+     */
+    private suspend fun handlePlayerId(json: JSONObject) {
+        val fp = json.optString("deviceFingerprint", "")
+        if (fp.isNotEmpty()) {
+            deviceManager.setDeviceFingerprint(fp)
+        }
+        val playerId = json.optString("playerId", "")
+        if (playerId.isNotEmpty()) {
+            val playerName = json.optString("playerName", "手环玩家")
+            deviceManager.saveAccount(playerId, playerName)
+            deviceManager.switchAccount(playerId, playerName)
         }
     }
 

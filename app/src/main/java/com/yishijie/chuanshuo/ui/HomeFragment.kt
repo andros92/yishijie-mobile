@@ -37,6 +37,7 @@ class HomeFragment : Fragment() {
                 val connected = intent.getBooleanExtra(CompanionService.EXTRA_CONNECTED, false)
                 val detail = intent.getStringExtra(CompanionService.EXTRA_DETAIL) ?: ""
                 updateConnectionUI(connected, detail)
+                refreshAccountUI()
             }
         }
     }
