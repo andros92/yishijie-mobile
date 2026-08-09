@@ -355,7 +355,7 @@ class GameSyncManager private constructor(
     // ========== 排行榜 ==========
     private suspend fun handleReqLeaderboard(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
-        val type = json.optString("type", "level")
+        val type = json.optString("lbType", "level")
         when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 50) }) {
             is ApiResult.Success -> {
                 val arr = JSONArray()
