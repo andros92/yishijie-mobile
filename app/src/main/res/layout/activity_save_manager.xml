@@ -28,7 +28,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="存档管理"
+            android:text="云存档"
             android:textSize="20sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
@@ -49,6 +49,7 @@
             android:paddingEnd="16dp"
             android:paddingBottom="20dp">
 
+            <!-- 操作 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -67,7 +68,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="云存档"
+                        android:text="操作"
                         android:textSize="15sp"
                         android:textColor="@color/text_primary"
                         android:textStyle="bold" />
@@ -82,24 +83,35 @@
                         android:layout_marginBottom="12dp" />
 
                     <Button
-                        android:id="@+id/btnDownloadServer"
+                        android:id="@+id/btnUploadServer"
                         android:layout_width="match_parent"
                         android:layout_height="46dp"
-                        android:text="从服务器下载存档"
+                        android:text="上传当前存档（手环 → 云）"
+                        android:textSize="14sp"
+                        android:backgroundTint="@color/accent"
+                        android:layout_marginBottom="8dp" />
+
+                    <Button
+                        android:id="@+id/btnRestoreServer"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:text="恢复云存档（云 → 手环，每日 1 次）"
                         android:textSize="14sp"
                         android:backgroundTint="@color/primary"
                         android:layout_marginBottom="8dp" />
 
                     <Button
-                        android:id="@+id/btnUploadServer"
+                        android:id="@+id/btnRefreshCloud"
                         android:layout_width="match_parent"
                         android:layout_height="46dp"
-                        android:text="上传存档到服务器"
+                        android:text="刷新云存档信息"
                         android:textSize="14sp"
-                        android:backgroundTint="@color/accent" />
+                        android:backgroundTint="@color/surface_light"
+                        android:textColor="@color/text_primary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 云存档概况 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -119,38 +131,20 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="手环同步"
+                        android:text="云存档概况"
                         android:textSize="15sp"
                         android:textColor="@color/text_primary"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvCloudInfo"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="与手环之间的存档传输"
-                        android:textSize="12sp"
+                        android:text="正在读取云存档…"
+                        android:textSize="13sp"
                         android:textColor="@color/text_secondary"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="12dp" />
-
-                    <Button
-                        android:id="@+id/btnDownloadBand"
-                        android:layout_width="match_parent"
-                        android:layout_height="46dp"
-                        android:text="从手环下载存档"
-                        android:textSize="14sp"
-                        android:backgroundTint="@color/surface_light"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp" />
-
-                    <Button
-                        android:id="@+id/btnUploadBand"
-                        android:layout_width="match_parent"
-                        android:layout_height="46dp"
-                        android:text="上传存档到手环"
-                        android:textSize="14sp"
-                        android:backgroundTint="@color/surface_light"
-                        android:textColor="@color/text_primary" />
+                        android:lineSpacingExtra="4dp"
+                        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

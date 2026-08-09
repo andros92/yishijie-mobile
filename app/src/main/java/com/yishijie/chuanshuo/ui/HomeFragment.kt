@@ -20,7 +20,10 @@ import com.yishijie.chuanshuo.databinding.FragmentHomeBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
 import com.yishijie.chuanshuo.interconnect.InterconnManager
 import com.yishijie.chuanshuo.service.CompanionService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class HomeFragment : Fragment() {
 
@@ -30,6 +33,7 @@ class HomeFragment : Fragment() {
     private lateinit var interconnManager: InterconnManager
     private lateinit var syncManager: GameSyncManager
     private var updateChecked = false
+    private var dataLoading = false
 
     private val connectionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -60,6 +64,7 @@ class HomeFragment : Fragment() {
         super.onResume()
         requireContext().registerReceiver(connectionReceiver, IntentFilter(CompanionService.ACTION_CONNECTION_STATUS))
         refreshAccountUI()
+        loadDataSummary()
         if (!updateChecked) {
             updateChecked = true
             checkUpdate()
@@ -119,6 +124,10 @@ class HomeFragment : Fragment() {
         binding.btnExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
         binding.btnAnnouncements.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
         binding.btnRecharge.setOnClickListener { (activity as? MainActivity)?.switchTab(MainActivity.TAB_RECHARGE) }
+        binding.btnRefreshData.setOnClickListener {
+            loadDataSummary()
+            binding.tvToast.text = "正在刷新数据…"
+        }
     }
 
     private fun updateConnectionUI(connected: Boolean, detail: String) {
@@ -134,6 +143,91 @@ class HomeFragment : Fragment() {
         val name = deviceManager.getCurrentPlayerName()
         binding.tvAccount.text = if (id != null) "账号：$name（$id）" else "未注册"
         binding.tvConnDetail.text = "设备指纹：${deviceManager.getDeviceFingerprint() ?: "未知（需连接手环）"}"
+    }
+
+    /**
+     * 首页数据卡：优先拉手环当前存档，手环不可用时回退读取云存档
+     */
+    private fun loadDataSummary() {
+        if (dataLoading) return
+        dataLoading = true
+        binding.tvDataSummary.text = "加载中…"
+        syncManager.downloadSaveFromBand(object : GameSyncManager.SaveCallback {
+            override fun onSaveUploaded(success: Boolean, message: String) {}
+            override fun onSaveDownloaded(data: JSONObject?) {
+                dataLoading = false
+                if (data != null) {
+                    renderDataSummary(data)
+                } else {
+                    loadCloudSummaryFallback()
+                }
+            }
+            override fun onError(error: String) {
+                dataLoading = false
+                loadCloudSummaryFallback()
+            }
+        })
+    }
+
+    private fun loadCloudSummaryFallback() {
+        lifecycleScope.launch {
+            val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
+            if (_binding == null) return@launch
+            renderDataSummary(data?.let { JSONObject(it.toString()) })
+        }
+    }
+
+    private fun renderDataSummary(data: JSONObject?) {
+        if (_binding == null) return
+        if (data == null) {
+            binding.tvDataSummary.text = "暂无数据\n请连接手环，或在“存档管理”上传云存档。"
+            return
+        }
+        val lines = ArrayList<String>()
+        val stats = data.optJSONObject("stats")
+        val bag = data.optJSONObject("bag")
+        val cls = data.optJSONObject("class")
+        val lv = stats?.optLong("lv", 1L) ?: 1L
+        val clsName = classNames[cls?.optString("key", "")] ?: "未就职"
+        lines.add("Lv.$lv · $clsName")
+        lines.add("金币：${bag?.optLong("coin", 0L) ?: 0L}")
+        lines.add("生命 ${stats?.optLong("hp", 0L) ?: 0L} · 蓝量 ${stats?.optLong("mp", 0L) ?: 0L} · 饱食 ${stats?.optLong("hunger", 0L) ?: 0L}")
+
+        var gear = 0
+        data.optJSONObject("gear")?.let { g ->
+            val it = g.keys()
+            while (it.hasNext()) {
+                val k = it.next()
+                gear += (g.optJSONArray(k)?.length() ?: 0)
+            }
+        }
+        var equip = 0
+        data.optJSONObject("equip")?.let { e ->
+            val it = e.keys()
+            while (it.hasNext()) {
+                val k = it.next()
+                val v = e.opt(k)
+                if (v is JSONObject && v.has("key")) equip++
+            }
+        }
+        val pets = data.optJSONObject("pets")?.optJSONArray("list")?.length() ?: 0
+        val petCases = data.optJSONObject("pet_cases")?.optJSONArray("list")?.length() ?: 0
+        lines.add("装备 $gear+$equip · 宠物 $pets · 宠物栏 $petCases")
+
+        val mats = ArrayList<String>()
+        val keys = arrayOf(
+            "wood" to "木材", "stone" to "石块", "copper" to "铜矿", "iron" to "铁矿",
+            "spirit_crystal" to "灵晶", "gem_core" to "宝石核心", "pet_case" to "宠物栏",
+            "boss_ticket" to "BOSS券"
+        )
+        for ((k, name) in keys) {
+            val c = bag?.optLong(k, 0L) ?: 0L
+            if (c > 0) mats.add("$name×$c")
+        }
+        if (mats.isNotEmpty()) {
+            lines.add("物资：" + mats.joinToString("　"))
+        }
+        binding.tvDataSummary.text = lines.joinToString("\n")
     }
 
     private fun checkUpdate() {
@@ -161,5 +255,14 @@ class HomeFragment : Fragment() {
                 is ApiResult.Error -> {}
             }
         }
+    }
+
+    companion object {
+        private val classNames = mapOf(
+            "warrior" to "战士",
+            "knight" to "骑士",
+            "priest" to "牧师",
+            "mage" to "法师"
+        )
     }
 }
