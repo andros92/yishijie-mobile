@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.yishijie.chuanshuo.api.ApiClient
 import com.yishijie.chuanshuo.api.ApiResult
 import com.yishijie.chuanshuo.api.RenameRequest
+import com.yishijie.chuanshuo.BuildConfig
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.FragmentProfileBinding
 import kotlinx.coroutines.launch
@@ -41,6 +43,7 @@ class ProfileFragment : Fragment() {
         binding.rowExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
         binding.rowBridge.setOnClickListener { startActivity(Intent(requireContext(), BridgeActivity::class.java)) }
         binding.rowAnnouncement.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
+        binding.rowUpdate.setOnClickListener { checkUpdate() }
         refresh()
     }
 
@@ -113,6 +116,36 @@ class ProfileFragment : Fragment() {
                     }
                 }
                 is ApiResult.Error -> Toast.makeText(requireContext(), "改名失败：${r.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // 手动检查更新：有新版本弹窗并跳转下载链接，已是最新则提示
+    private fun checkUpdate() {
+        lifecycleScope.launch {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.version() }) {
+                is ApiResult.Success -> {
+                    val v = r.data
+                    if (v != null && v.versionCode > BuildConfig.VERSION_CODE) {
+                        val builder = AlertDialog.Builder(requireContext())
+                            .setTitle("发现新版本 ${v.versionName}")
+                            .setMessage("更新内容：\n${v.updateNotes.ifEmpty { "修复与优化" }}")
+                            .setNegativeButton("以后再说", null)
+                        if (!v.downloadUrl.isNullOrEmpty()) {
+                            builder.setPositiveButton("立即更新") { _, _ ->
+                                try {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(v.downloadUrl)))
+                                } catch (e: Exception) {
+                                    Toast.makeText(requireContext(), "无法打开下载链接", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        builder.show()
+                    } else {
+                        Toast.makeText(requireContext(), "已是最新版本（${v?.versionName ?: BuildConfig.VERSION_NAME}）", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                is ApiResult.Error -> Toast.makeText(requireContext(), "检查更新失败：${r.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

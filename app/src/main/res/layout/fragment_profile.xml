@@ -185,8 +185,6 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/surface_border" android:layout_marginStart="52dp" />
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/surface_border" android:layout_marginStart="52dp" />
-
                 <LinearLayout
                     android:id="@+id/rowPvp"
                     android:layout_width="match_parent"
@@ -250,6 +248,23 @@
                     android:focusable="true">
                     <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/mail" android:contentDescription="公告" />
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="公告" android:textSize="15sp" android:textColor="@color/text_primary" android:layout_marginStart="12dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textSize="20sp" android:textColor="@color/text_hint" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/surface_border" android:layout_marginStart="52dp" />
+
+                <LinearLayout
+                    android:id="@+id/rowUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/icon_update" android:contentDescription="检查更新" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="检查更新" android:textSize="15sp" android:textColor="@color/text_primary" android:layout_marginStart="12dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textSize="20sp" android:textColor="@color/text_hint" />
                 </LinearLayout>
             </LinearLayout>
