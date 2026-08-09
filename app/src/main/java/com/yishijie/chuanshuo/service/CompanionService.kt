@@ -26,6 +26,7 @@ class CompanionService : Service() {
 
         const val ACTION_CONNECTION_STATUS = "com.yishijie.chuanshuo.CONNECTION_STATUS"
         const val ACTION_BRIDGE_STATE = "com.yishijie.chuanshuo.BRIDGE_STATE"
+        const val ACTION_DEVICE_FINGERPRINT = "com.yishijie.chuanshuo.DEVICE_FINGERPRINT"
         const val EXTRA_CONNECTED = "connected"
         const val EXTRA_STATE = "state"
         const val EXTRA_DETAIL = "detail"

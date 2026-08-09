@@ -447,6 +447,12 @@ class InterconnManager private constructor(private val context: Context) {
 
         // 发送 phone_ready 和 request_player_id（必须在 SDK 回调线程发送）
         notifyWatchPhoneReady(nodeId)
+        // 每次建立连接都主动向手环请求身份（含设备指纹）：
+        // 手环 App 可能已在后台运行并完成过握手，此时不会再主动发握手消息，
+        // 若不主动请求，设备指纹永远拿不到
+        if (pendingPlayerName == null) {
+            pendingPlayerName = "手环玩家"
+        }
         sendPlayerIdRequest()
 
         refreshing = false

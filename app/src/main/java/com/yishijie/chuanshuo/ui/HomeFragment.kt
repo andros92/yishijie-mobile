@@ -42,6 +42,8 @@ class HomeFragment : Fragment() {
                 val detail = intent.getStringExtra(CompanionService.EXTRA_DETAIL) ?: ""
                 updateConnectionUI(connected, detail)
                 refreshAccountUI()
+            } else if (intent.action == CompanionService.ACTION_DEVICE_FINGERPRINT) {
+                refreshAccountUI()
             }
         }
     }
@@ -62,7 +64,11 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        requireContext().registerReceiver(connectionReceiver, IntentFilter(CompanionService.ACTION_CONNECTION_STATUS))
+        val filter = IntentFilter().apply {
+            addAction(CompanionService.ACTION_CONNECTION_STATUS)
+            addAction(CompanionService.ACTION_DEVICE_FINGERPRINT)
+        }
+        requireContext().registerReceiver(connectionReceiver, filter)
         refreshAccountUI()
         loadDataSummary()
         if (!updateChecked) {

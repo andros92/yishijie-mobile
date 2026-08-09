@@ -38,6 +38,9 @@ class BridgeActivity : AppCompatActivity() {
                     updateBridgeStateUI(state, detail, appInstalled, devicePermission, notifyPermission, watchConnected)
                     updateProfileInfo()
                 }
+                CompanionService.ACTION_DEVICE_FINGERPRINT -> {
+                    updateProfileInfo()
+                }
             }
         }
     }
@@ -59,6 +62,7 @@ class BridgeActivity : AppCompatActivity() {
         val filter = IntentFilter().apply {
             addAction(CompanionService.ACTION_CONNECTION_STATUS)
             addAction(CompanionService.ACTION_BRIDGE_STATE)
+            addAction(CompanionService.ACTION_DEVICE_FINGERPRINT)
         }
         registerReceiver(connectionReceiver, filter)
         // 刷新状态

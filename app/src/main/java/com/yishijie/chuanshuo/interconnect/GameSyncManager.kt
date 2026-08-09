@@ -16,8 +16,10 @@ import com.yishijie.chuanshuo.api.RechargeOrderRequest
 import com.yishijie.chuanshuo.api.RegisterRequest
 import com.yishijie.chuanshuo.api.SaveUploadRequest
 import com.yishijie.chuanshuo.data.DeviceManager
+import com.yishijie.chuanshuo.service.CompanionService
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -132,6 +134,19 @@ class GameSyncManager private constructor(
         interconn.sendToWatch(msg, onFail = { err -> Log.e(TAG, "回包失败 type=$type: $err") })
     }
 
+    /**
+     * 设备指纹写入后通知界面刷新（连接状态广播比指纹响应早，界面可能停在“未知”）
+     */
+    private fun notifyFingerprintUpdated() {
+        try {
+            context.sendBroadcast(
+                Intent(CompanionService.ACTION_DEVICE_FINGERPRINT).setPackage(context.packageName)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "指纹广播失败: ${e.message}")
+        }
+    }
+
     // ========== 注册 ==========
     private suspend fun handleReqRegister(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
@@ -143,6 +158,7 @@ class GameSyncManager private constructor(
         }
         // 先记录手环指纹，后续所有 API 校验都依赖它
         deviceManager.setDeviceFingerprint(fp)
+        notifyFingerprintUpdated()
         val request = RegisterRequest(name, fp, deviceManager.getPhoneFingerprint())
         when (val r = ApiClient.safeApiCall { ApiClient.api.register(request) }) {
             is ApiResult.Success -> {
@@ -179,6 +195,7 @@ class GameSyncManager private constructor(
         val fp = json.optString("deviceFingerprint", "")
         if (fp.isNotEmpty()) {
             deviceManager.setDeviceFingerprint(fp)
+            notifyFingerprintUpdated()
         }
         val playerId = json.optString("playerId", "")
         if (playerId.isNotEmpty()) {
