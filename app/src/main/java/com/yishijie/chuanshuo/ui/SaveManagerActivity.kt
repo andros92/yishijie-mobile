@@ -1,6 +1,7 @@
 package com.yishijie.chuanshuo.ui
 
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.JsonObject
@@ -61,23 +62,12 @@ class SaveManagerActivity : AppCompatActivity() {
                 status("今天已恢复过存档（每日限 1 次），明天再来")
                 return@setOnClickListener
             }
-            lifecycleScope.launch {
-                status("下载云存档…")
-                val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
-                if (data == null) {
-                    status("下载失败：服务器上没有存档，或登录/网络异常")
-                    return@launch
-                }
-                deviceManager.markRestoredToday()
-                status("已从服务器下载，正在下发给手环…")
-                syncManager.uploadSaveToBand(JSONObject(data.toString()), object : GameSyncManager.SaveCallback {
-                    override fun onSaveUploaded(success: Boolean, message: String) {}
-                    override fun onSaveDownloaded(data: JSONObject?) {}
-                    override fun onError(error: String) {
-                        status("下发给手环失败：$error")
-                    }
-                })
-            }
+            AlertDialog.Builder(this)
+                .setTitle("恢复云存档")
+                .setMessage("将从云存档恢复到手环，覆盖手环当前存档（每日限 1 次）。确定继续？")
+                .setPositiveButton("恢复") { _, _ -> doRestore() }
+                .setNegativeButton("取消", null)
+                .show()
         }
 
         binding.btnRefreshCloud.setOnClickListener {
@@ -86,6 +76,31 @@ class SaveManagerActivity : AppCompatActivity() {
         }
 
         loadCloudSummary()
+    }
+
+    private fun doRestore() {
+        if (deviceManager.getCurrentPlayerId() == null) return
+        if (!deviceManager.canRestoreToday()) {
+            status("今天已恢复过存档（每日限 1 次），明天再来")
+            return
+        }
+        lifecycleScope.launch {
+            status("下载云存档…")
+            val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
+            if (data == null) {
+                status("下载失败：服务器上没有存档，或登录/网络异常")
+                return@launch
+            }
+            deviceManager.markRestoredToday()
+            status("已从服务器下载，正在下发给手环…")
+            syncManager.uploadSaveToBand(JSONObject(data.toString()), object : GameSyncManager.SaveCallback {
+                override fun onSaveUploaded(success: Boolean, message: String) {}
+                override fun onSaveDownloaded(data: JSONObject?) {}
+                override fun onError(error: String) {
+                    status("下发给手环失败：$error")
+                }
+            })
+        }
     }
 
     private fun requireLogin(): Boolean {
