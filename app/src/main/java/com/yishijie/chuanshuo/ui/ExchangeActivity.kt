@@ -17,8 +17,8 @@ import com.yishijie.chuanshuo.api.ExchangeListRequest
 import com.yishijie.chuanshuo.api.ListingItem
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.ActivityExchangeBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+
 import kotlinx.coroutines.launch
 
 class ExchangeActivity : AppCompatActivity() {
@@ -59,7 +59,7 @@ class ExchangeActivity : AppCompatActivity() {
     }
 
     private fun loadListings() {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val kw = binding.etSearch.text.toString().trim()
             val me = deviceManager.getCurrentPlayerId()
             val fp = deviceManager.getDeviceFingerprint()
@@ -211,7 +211,7 @@ class ExchangeActivity : AppCompatActivity() {
         val me = deviceManager.getCurrentPlayerId() ?: run { status("请先登录"); return }
         val fp = deviceManager.getDeviceFingerprint() ?: run { status("请先连接手环"); return }
         val key = ApiClient.apiKey ?: run { status("缺少 apiKey，请重新登录"); return }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall {
                 ApiClient.api.exchangeBuy(ExchangeBuyRequest(item.id, me, fp, key))
             }) {
@@ -228,7 +228,7 @@ class ExchangeActivity : AppCompatActivity() {
         val me = deviceManager.getCurrentPlayerId() ?: run { status("请先登录"); return }
         val fp = deviceManager.getDeviceFingerprint() ?: run { status("请先连接手环"); return }
         val key = ApiClient.apiKey ?: run { status("缺少 apiKey，请重新登录"); return }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall {
                 ApiClient.api.exchangeCancel(ExchangeCancelRequest(item.id, me, fp, key))
             }) {
@@ -253,7 +253,7 @@ class ExchangeActivity : AppCompatActivity() {
             status("请填写 物品key / 名称 / 价格")
             return
         }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall {
                 ApiClient.api.exchangeList(
                     ExchangeListRequest(
@@ -274,7 +274,7 @@ class ExchangeActivity : AppCompatActivity() {
 
     private fun showHistory() {
         val me = deviceManager.getCurrentPlayerId() ?: run { status("请先登录"); return }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeHistory(me) }) {
                 is ApiResult.Success -> {
                     val sb = StringBuilder()

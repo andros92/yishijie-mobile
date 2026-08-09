@@ -14,8 +14,8 @@ import com.yishijie.chuanshuo.api.ApiClient
 import com.yishijie.chuanshuo.api.ApiResult
 import com.yishijie.chuanshuo.api.LeaderboardItem
 import com.yishijie.chuanshuo.databinding.FragmentLeaderboardBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+
 import kotlinx.coroutines.launch
 
 class LeaderboardFragment : Fragment() {
@@ -61,7 +61,7 @@ class LeaderboardFragment : Fragment() {
 
     private fun load() {
         binding.tvStatus.text = "加载中..."
-        CoroutineScope(Dispatchers.Main).launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 50) }) {
                 is ApiResult.Success -> render(r.data?.data ?: emptyList())
                 is ApiResult.Error -> {

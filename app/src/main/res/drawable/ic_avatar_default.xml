@@ -6,14 +6,14 @@
     android:viewportHeight="80">
     <!-- 鑳屾櫙鍦?-->
     <path
-        android:fillColor="#E8F0EB"
+        android:fillColor="#1E2A4A"
         android:pathData="M40,40m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
     <!-- 澶撮儴 -->
     <path
-        android:fillColor="#059669"
+        android:fillColor="#4FD8A8"
         android:pathData="M40,25c-6.6,0 -12,5.4 -12,12s5.4,12 12,12s12,-5.4 12,-12s-5.4,-12 -12,-12z" />
     <!-- 韬綋 -->
     <path
-        android:fillColor="#059669"
+        android:fillColor="#4FD8A8"
         android:pathData="M40,50c-11,0 -20,5.7 -20,12.5v6.5h40v-6.5c0,-6.8 -9,-12.5 -20,-12.5z" />
 </vector>

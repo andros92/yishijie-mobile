@@ -96,6 +96,7 @@ class HomeFragment : Fragment() {
             binding.tvToast.text = "注册中..."
             syncManager.registerAccount(name, object : GameSyncManager.AccountCallback {
                 override fun onRegistered(playerId: String, playerName: String, isNew: Boolean, error: String?) {
+                    if (_binding == null) return
                     binding.tvToast.text = if (error != null) "注册失败: $error" else (if (isNew) "注册成功" else "已注册") + "：$playerName ($playerId)"
                     refreshAccountUI()
                 }
@@ -107,6 +108,7 @@ class HomeFragment : Fragment() {
             syncManager.loginAccount(object : GameSyncManager.AccountCallback {
                 override fun onRegistered(playerId: String, playerName: String, isNew: Boolean, error: String?) {}
                 override fun onLoggedIn(playerId: String?, playerName: String?, error: String?) {
+                    if (_binding == null) return
                     binding.tvToast.text = if (error != null) "登录失败: $error" else "登录成功：$playerName ($playerId)"
                     refreshAccountUI()
                 }

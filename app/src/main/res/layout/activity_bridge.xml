@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="‹ 返回"
-                android:textColor="#6B7280"
+                android:textColor="#9AA3C0"
                 android:textSize="15sp"
                 android:paddingEnd="20dp"
                 android:clickable="true"
@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="开箱万界垃圾佬"
-                android:textColor="#1A1D26"
+                android:textColor="#F4F6FF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
             android:text="手机桥接中心 · 连接后可接收手环游戏数据"
-            android:textColor="#4B5563"
+            android:textColor="#C7CFE8"
             android:textSize="12sp" />
 
         <!-- 账号信息 -->
@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="账号信息"
-                android:textColor="#6B7280"
+                android:textColor="#9AA3C0"
                 android:textSize="12sp"
                 android:letterSpacing="0.06" />
 
@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="未绑定"
-                android:textColor="#DC2626"
+                android:textColor="#FF6B7A"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#4B5563"
+                android:textColor="#C7CFE8"
                 android:textSize="12sp"
                 android:fontFamily="monospace" />
         </LinearLayout>
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="桥接状态"
-                android:textColor="#6B7280"
+                android:textColor="#9AA3C0"
                 android:textSize="12sp"
                 android:letterSpacing="0.06" />
 
@@ -110,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="未连接"
-                android:textColor="#DC2626"
+                android:textColor="#FF6B7A"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -119,7 +119,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#4B5563"
+                android:textColor="#C7CFE8"
                 android:textSize="12sp" />
 
             <TextView
@@ -127,7 +127,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textColor="#6B7280"
+                android:textColor="#9AA3C0"
                 android:textSize="12sp" />
 
             <TextView
@@ -135,7 +135,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textColor="#4B5563"
+                android:textColor="#C7CFE8"
                 android:textSize="12sp" />
 
             <!-- 权限检查列表 -->
@@ -145,7 +145,7 @@
                 android:layout_marginTop="14dp"
                 android:orientation="vertical">
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E2E6EF" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#2EFFFFFF" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -159,7 +159,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="手表应用安装"
-                        android:textColor="#6B7280"
+                        android:textColor="#9AA3C0"
                         android:textSize="13sp" />
 
                     <TextView
@@ -167,7 +167,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="未知"
-                        android:textColor="#4B5563"
+                        android:textColor="#C7CFE8"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -183,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="设备权限"
-                        android:textColor="#6B7280"
+                        android:textColor="#9AA3C0"
                         android:textSize="13sp" />
 
                     <TextView
@@ -191,7 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="未知"
-                        android:textColor="#4B5563"
+                        android:textColor="#C7CFE8"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -207,7 +207,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="通知权限"
-                        android:textColor="#6B7280"
+                        android:textColor="#9AA3C0"
                         android:textSize="13sp" />
 
                     <TextView
@@ -215,7 +215,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="未知"
-                        android:textColor="#4B5563"
+                        android:textColor="#C7CFE8"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -231,7 +231,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="手表连接"
-                        android:textColor="#6B7280"
+                        android:textColor="#9AA3C0"
                         android:textSize="13sp" />
 
                     <TextView
@@ -239,7 +239,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="未知"
-                        android:textColor="#4B5563"
+                        android:textColor="#C7CFE8"
                         android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -252,8 +252,8 @@
                 android:layout_marginTop="16dp"
                 android:text="刷新桥接状态"
                 android:textSize="13sp"
-                android:backgroundTint="#E8EBF3"
-                android:textColor="#4B5563" />
+                android:backgroundTint="#1A2242"
+                android:textColor="#C7CFE8" />
 
             <Button
                 android:id="@+id/btnRequestPermission"
@@ -262,7 +262,7 @@
                 android:layout_marginTop="8dp"
                 android:text="申请桥接权限"
                 android:textSize="13sp"
-                android:backgroundTint="#4F46E5"
+                android:backgroundTint="#7B8CFF"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 
@@ -273,7 +273,7 @@
             android:layout_height="wrap_content"
             android:padding="14dp"
             android:background="@drawable/bg_card_player"
-            android:textColor="#4B5563"
+            android:textColor="#C7CFE8"
             android:textSize="13sp"
             android:text="等待初始化..." />
     </LinearLayout>

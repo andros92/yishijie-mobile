@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.yishijie.chuanshuo.api.ApiClient
 import com.yishijie.chuanshuo.api.ApiResult
 import com.yishijie.chuanshuo.databinding.ActivityAnnouncementBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+
 import kotlinx.coroutines.launch
 
 class AnnouncementActivity : AppCompatActivity() {
@@ -26,7 +26,7 @@ class AnnouncementActivity : AppCompatActivity() {
     }
 
     private fun loadAnnouncements() {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.announcements() }) {
                 is ApiResult.Success -> {
                     binding.llAnnouncements.removeAllViews()

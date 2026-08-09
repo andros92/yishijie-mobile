@@ -144,10 +144,12 @@ class RechargeFragment : Fragment() {
                 JSONObject(save.toString()),
                 object : GameSyncManager.SaveCallback {
                     override fun onSaveUploaded(success: Boolean, message: String) {
+                        if (_binding == null) return
                         status(if (success) "已同步到手环，打开手环即可看到金币" else "同步失败：$message")
                     }
                     override fun onSaveDownloaded(data: JSONObject?) {}
                     override fun onError(error: String) {
+                        if (_binding == null) return
                         status("同步失败：$error")
                     }
                 }

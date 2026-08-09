@@ -7,8 +7,9 @@ import com.google.gson.JsonObject
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.ActivitySaveManagerBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -30,7 +31,7 @@ class SaveManagerActivity : AppCompatActivity() {
 
         binding.btnDownloadServer.setOnClickListener {
             if (deviceManager.getCurrentPlayerId() == null) { status("请先登录账号"); return@setOnClickListener }
-            CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch {
                 status("下载中...")
                 val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
                 if (data != null) {
@@ -48,13 +49,13 @@ class SaveManagerActivity : AppCompatActivity() {
 
         binding.btnUploadServer.setOnClickListener {
             if (deviceManager.getCurrentPlayerId() == null) { status("请先登录账号"); return@setOnClickListener }
-            CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch {
                 status("等待手环存档...")
                 syncManager.downloadSaveFromBand(object : GameSyncManager.SaveCallback {
                     override fun onSaveUploaded(success: Boolean, message: String) {}
                     override fun onSaveDownloaded(data: JSONObject?) {
                         if (data == null) { status("手环没有返回存档"); return }
-                        CoroutineScope(Dispatchers.Main).launch {
+                        lifecycleScope.launch {
                             val ok = withContext(Dispatchers.IO) {
                                 syncManager.uploadSaveToServer(com.google.gson.JsonParser().parse(data.toString()).asJsonObject)
                             }

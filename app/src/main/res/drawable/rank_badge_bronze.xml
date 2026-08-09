@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 鎺掑悕寰界珷-閾?-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-    <solid android:color="#FDE8D8" />
+    <solid android:color="#2A2233" />
     <stroke android:width="2dp" android:color="#D97706" />
 </shape>
