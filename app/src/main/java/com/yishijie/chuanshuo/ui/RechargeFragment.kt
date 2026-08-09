@@ -124,7 +124,7 @@ class RechargeFragment : Fragment() {
                         status("暂无到账记录，支付后请稍等片刻再查询")
                     } else {
                         val last = paid.first()
-                        status("已到账：¥${last.amount} → ${last.qty} 金币\n订单 ${last.order_id}")
+                        status("已到账：¥${last.amount} → ${last.qty} 金币，已发到邮箱，请到邮箱领取\n订单 ${last.order_id}")
                     }
                 }
                 is ApiResult.Error -> status("查询失败: ${r.message}")
