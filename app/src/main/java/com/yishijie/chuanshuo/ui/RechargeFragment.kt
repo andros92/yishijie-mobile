@@ -54,7 +54,8 @@ class RechargeFragment : Fragment() {
             return
         }
         val message = "3 万金币（¥3）\n\n您的玩家 ID：$playerId\n\n" +
-                "请在爱发电支付页面的「备注 / 留言」中粘贴这个 ID，系统会自动发放金币。"
+                "请在爱发电支付页面的「备注 / 留言」中粘贴这个 ID，系统会自动发放金币。\n\n" +
+                "💡 也可以在爱发电上直接搜索「异世界传说」找到我们"
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("购买须知")
             .setMessage(message)
