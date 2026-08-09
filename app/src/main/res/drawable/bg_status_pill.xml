@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 连接状态胶囊 -->
+<!-- 杩炴帴鐘舵€佽兌鍥?-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#0E1428" />
+    <solid android:color="#FFFFFF" />
     <corners android:radius="18dp" />
-    <stroke android:width="1dp" android:color="#1C2848" />
+    <stroke android:width="1dp" android:color="#E2E6EF" />
 </shape>

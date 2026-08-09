@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 分隔线 -->
+<!-- 鍒嗛殧绾?-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#141E38" />
+    <solid android:color="#E2E6EF" />
     <size android:height="1dp" />
 </shape>

@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Yishijie" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Yishijie" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <style name="CardStyle">
         <item name="cardCornerRadius">16dp</item>
-        <item name="cardElevation">0dp</item>
+        <item name="cardElevation">2dp</item>
         <item name="cardBackgroundColor">@color/background_card</item>
     </style>
 

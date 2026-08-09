@@ -34,7 +34,8 @@ interface YishijieApiService {
     @GET("/api/yishijie/exchange/listings")
     suspend fun exchangeListings(
         @Query("page") page: Int = 1,
-        @Query("size") size: Int = 10
+        @Query("size") size: Int = 10,
+        @Query("category") category: String? = null
     ): Response<ListingsResponse>
 
     @POST("/api/yishijie/exchange/buy")
@@ -63,6 +64,39 @@ interface YishijieApiService {
 
     @POST("/api/yishijie/mail/claim")
     suspend fun claimMail(@Body request: MailClaimRequest): Response<MailClaimResponse>
+
+    // ========== 激活码 ==========
+    @POST("/api/yishijie/redeem/redeem")
+    suspend fun redeem(@Body request: RedeemRequest): Response<RedeemResponse>
+
+    // ========== 排行榜 ==========
+    @GET("/api/yishijie/leaderboard")
+    suspend fun leaderboard(
+        @Query("type") type: String = "level",
+        @Query("limit") limit: Int = 50
+    ): Response<LeaderboardResponse>
+
+    // ========== PVP ==========
+    @GET("/api/yishijie/pvp/targets")
+    suspend fun pvpTargets(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<PvpTargetsResponse>
+
+    @GET("/api/yishijie/pvp/defender")
+    suspend fun pvpDefender(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String,
+        @Query("targetId") targetId: String
+    ): Response<PvpDefenderResponse>
+
+    @POST("/api/yishijie/pvp/report")
+    suspend fun pvpReport(@Body request: PvpReportRequest): Response<PvpReportResponse>
+
+    @GET("/api/yishijie/pvp/rating")
+    suspend fun pvpRating(@Query("playerId") playerId: String): Response<PvpRatingResponse>
 
     // ========== 公告 / 版本 ==========
     @GET("/api/yishijie/announcements")

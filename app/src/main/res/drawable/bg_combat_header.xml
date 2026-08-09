@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 战力区头部 -->
+<!-- 鎴樺姏鍖哄ご閮?-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#0A0E1A" />
+    <solid android:color="#EFF3FB" />
     <corners android:radius="16dp" />
 </shape>

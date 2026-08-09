@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 金橙按钮（礼包码等） -->
+<!-- 閲戞鎸夐挳锛堢ぜ鍖呯爜绛夛級 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#E8A030" />
+    <solid android:color="#2563EB" />
     <corners android:radius="14dp" />
 </shape>

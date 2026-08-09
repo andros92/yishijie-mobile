@@ -1,6 +1,7 @@
 package com.yishijie.chuanshuo.api
 
 import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
 
 // ========== 注册 / 登录 ==========
 data class RegisterRequest(
@@ -50,7 +51,7 @@ data class ExchangeListRequest(
     val apiKey: String,
     val key: String,
     val name: String,
-    val img: String,
+    val img: String = "",
     val qty: Int,
     val price: Int,
     val quality: String? = null,
@@ -58,7 +59,9 @@ data class ExchangeListRequest(
     val gem: String? = null,
     val dur: Int = 0,
     val maxDur: Int = 0,
-    val broken: Boolean = false
+    val broken: Boolean = false,
+    val category: String? = null,
+    val pet: JsonObject? = null
 )
 
 data class ExchangeListResponse(
@@ -74,6 +77,8 @@ data class ListingItem(
     val item_key: String = "",
     val item_name: String = "",
     val item_img: String = "",
+    val category: String = "item",
+    val pet: JsonObject? = null,
     val qty: Int = 1,
     val price: Int = 0,
     val quality: String = "",
@@ -169,6 +174,7 @@ data class MailItem(
     val title: String = "",
     val content: String = "",
     val coins: Int = 0,
+    val rewards: JsonObject? = null,
     val claimed: Int = 0,
     val created_at: String = ""
 )
@@ -189,6 +195,93 @@ data class MailClaimRequest(
 data class MailClaimResponse(
     val success: Boolean = false,
     val coins: Int = 0,
+    val applied: JsonObject? = null,
+    val error: String? = null
+)
+
+// ========== 激活码 ==========
+data class RedeemRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val code: String
+)
+
+data class RedeemResponse(
+    val success: Boolean = false,
+    val message: String = "",
+    val rewards: JsonObject? = null,
+    val error: String? = null
+)
+
+// ========== 排行榜 ==========
+data class LeaderboardItem(
+    val playerId: String = "",
+    val playerName: String = "",
+    val value: Int = 0,
+    val exp: Int = 0,
+    val topLv: Int = 0,
+    val count: Int = 0
+)
+
+data class LeaderboardResponse(
+    val success: Boolean = false,
+    val data: List<LeaderboardItem> = emptyList(),
+    val error: String? = null
+)
+
+// ========== PVP ==========
+data class PvpTargetItem(
+    val playerId: String = "",
+    val playerName: String = "",
+    val rating: Int = 1000,
+    val lv: Int = 1
+)
+
+data class PvpTargetsResponse(
+    val success: Boolean = false,
+    val data: List<PvpTargetItem> = emptyList(),
+    val error: String? = null
+)
+
+data class PvpDefender(
+    val playerId: String = "",
+    val playerName: String = "",
+    val rating: Int = 1000,
+    @SerializedName("class") val cls: JsonObject? = null,
+    val stats: JsonObject? = null,
+    val equip: JsonObject? = null,
+    val gear: JsonObject? = null,
+    val pets: JsonObject? = null
+)
+
+data class PvpDefenderResponse(
+    val success: Boolean = false,
+    val defender: PvpDefender? = null,
+    val error: String? = null
+)
+
+data class PvpReportRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val targetId: String,
+    val win: Boolean
+)
+
+data class PvpReportResponse(
+    val success: Boolean = false,
+    val rating: Int = 0,
+    val delta: Int = 0,
+    val win: Boolean = false,
+    val error: String? = null
+)
+
+data class PvpRatingResponse(
+    val success: Boolean = false,
+    val rating: Int = 1000,
+    val wins: Int = 0,
+    val losses: Int = 0,
     val error: String? = null
 )
 

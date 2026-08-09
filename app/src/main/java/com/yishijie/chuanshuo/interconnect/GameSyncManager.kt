@@ -10,6 +10,8 @@ import com.yishijie.chuanshuo.api.ExchangeListRequest
 import com.yishijie.chuanshuo.api.LoginRequest
 import com.yishijie.chuanshuo.api.MailClaimRequest
 import com.yishijie.chuanshuo.api.MarkPaidRequest
+import com.yishijie.chuanshuo.api.PvpReportRequest
+import com.yishijie.chuanshuo.api.RedeemRequest
 import com.yishijie.chuanshuo.api.RechargeOrderRequest
 import com.yishijie.chuanshuo.api.RegisterRequest
 import com.yishijie.chuanshuo.api.SaveUploadRequest
@@ -82,6 +84,12 @@ class GameSyncManager private constructor(
             "req_exchange_cancel" -> scope.launch { handleReqExchangeCancel(json) }
             "req_mail_list" -> scope.launch { handleReqMailList(json) }
             "req_mail_claim" -> scope.launch { handleReqMailClaim(json) }
+            "req_redeem" -> scope.launch { handleReqRedeem(json) }
+            "req_leaderboard" -> scope.launch { handleReqLeaderboard(json) }
+            "req_pvp_targets" -> scope.launch { handleReqPvpTargets(json) }
+            "req_pvp_defender" -> scope.launch { handleReqPvpDefender(json) }
+            "req_pvp_report" -> scope.launch { handleReqPvpReport(json) }
+            "req_pvp_rating" -> scope.launch { handleReqPvpRating(json) }
             "req_recharge_order" -> scope.launch { handleReqRechargeOrder(json) }
             "game_data" -> {
                 // 手环推送整包存档：自动上传服务器
@@ -178,7 +186,8 @@ class GameSyncManager private constructor(
     private suspend fun handleReqExchangeListings(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val page = json.optInt("page", 1)
-        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeListings(page, 20) }) {
+        val cat = json.optString("category", "all")
+        when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeListings(page, 20, cat) }) {
             is ApiResult.Success -> {
                 val arr = JSONArray()
                 (r.data?.data ?: emptyList()).forEach { it ->
@@ -193,6 +202,8 @@ class GameSyncManager private constructor(
                         put("gem", it.gem)
                         put("dur", it.dur)
                         put("maxDur", it.max_dur)
+                        put("category", it.category)
+                        if (it.pet != null) put("pet", JSONObject(it.pet.toString()))
                     })
                 }
                 sendResponse(reqId, "exchange_listings", JSONObject().put("data", arr))
@@ -217,7 +228,9 @@ class GameSyncManager private constructor(
             qty = json.optInt("qty", 1), price = json.optInt("price", 0),
             quality = if (json.has("quality")) json.optString("quality") else null,
             gem = if (json.has("gem")) json.optString("gem") else null,
-            dur = json.optInt("dur", 0), maxDur = json.optInt("maxDur", 0)
+            dur = json.optInt("dur", 0), maxDur = json.optInt("maxDur", 0),
+            category = if (json.has("category")) json.optString("category") else null,
+            pet = json.optJSONObject("pet")?.let { gsonObj(it.toString()) }
         )
         when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeList(request) }) {
             is ApiResult.Success -> sendResponse(reqId, "exchange_listed", JSONObject().apply {
@@ -286,6 +299,7 @@ class GameSyncManager private constructor(
                         put("title", m.title)
                         put("content", m.content)
                         put("coins", m.coins)
+                        if (m.rewards != null) put("rewards", JSONObject(m.rewards.toString()))
                         put("claimed", m.claimed)
                         put("createdAt", m.created_at)
                     })
@@ -310,9 +324,153 @@ class GameSyncManager private constructor(
             is ApiResult.Success -> sendResponse(reqId, "mail_claimed", JSONObject().apply {
                 put("success", r.data?.success == true)
                 put("coins", r.data?.coins ?: 0)
+                if (r.data?.applied != null) put("applied", JSONObject(r.data.applied.toString()))
                 put("error", r.data?.error ?: "")
             })
             is ApiResult.Error -> sendResponse(reqId, "mail_claimed", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 激活码 ==========
+    private suspend fun handleReqRedeem(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "redeem_result", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val req = RedeemRequest(me, fp, key, json.optString("code", ""))
+        when (val r = ApiClient.safeApiCall { ApiClient.api.redeem(req) }) {
+            is ApiResult.Success -> sendResponse(reqId, "redeem_result", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("message", r.data?.message ?: "")
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "redeem_result", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== 排行榜 ==========
+    private suspend fun handleReqLeaderboard(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val type = json.optString("type", "level")
+        when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 50) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { it ->
+                    arr.put(JSONObject().apply {
+                        put("playerId", it.playerId)
+                        put("playerName", it.playerName)
+                        put("value", it.value)
+                        put("exp", it.exp)
+                        put("topLv", it.topLv)
+                        put("count", it.count)
+                    })
+                }
+                sendResponse(reqId, "leaderboard", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "leaderboard", JSONObject().put("error", r.message))
+        }
+    }
+
+    // ========== PVP ==========
+    private suspend fun handleReqPvpTargets(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "pvp_targets", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpTargets(me, fp, key) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { it ->
+                    arr.put(JSONObject().apply {
+                        put("playerId", it.playerId)
+                        put("playerName", it.playerName)
+                        put("rating", it.rating)
+                        put("lv", it.lv)
+                    })
+                }
+                sendResponse(reqId, "pvp_targets", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "pvp_targets", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpDefender(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "pvp_defender", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val targetId = json.optString("targetId", "")
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpDefender(me, fp, key, targetId) }) {
+            is ApiResult.Success -> {
+                val d = r.data?.defender
+                if (d == null) {
+                    sendResponse(reqId, "pvp_defender", JSONObject().put("error", r.data?.error ?: "无防守数据"))
+                } else {
+                    val obj = JSONObject().apply {
+                        put("playerId", d.playerId)
+                        put("playerName", d.playerName)
+                        put("rating", d.rating)
+                        if (d.cls != null) put("class", JSONObject(d.cls.toString()))
+                        if (d.stats != null) put("stats", JSONObject(d.stats.toString()))
+                        if (d.equip != null) put("equip", JSONObject(d.equip.toString()))
+                        if (d.gear != null) put("gear", JSONObject(d.gear.toString()))
+                        if (d.pets != null) put("pets", JSONObject(d.pets.toString()))
+                    }
+                    sendResponse(reqId, "pvp_defender", JSONObject().put("defender", obj))
+                }
+            }
+            is ApiResult.Error -> sendResponse(reqId, "pvp_defender", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpReport(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "pvp_report", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        val req = PvpReportRequest(me, fp, key, json.optString("targetId", ""), json.optBoolean("win", false))
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpReport(req) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_report", JSONObject().apply {
+                put("success", r.data?.success == true)
+                put("rating", r.data?.rating ?: 0)
+                put("delta", r.data?.delta ?: 0)
+                put("win", r.data?.win ?: false)
+                put("error", r.data?.error ?: "")
+            })
+            is ApiResult.Error -> sendResponse(reqId, "pvp_report", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpRating(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        if (me == null) {
+            sendResponse(reqId, "pvp_rating", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRating(me) }) {
+            is ApiResult.Success -> sendResponse(reqId, "pvp_rating", JSONObject().apply {
+                put("rating", r.data?.rating ?: 1000)
+                put("wins", r.data?.wins ?: 0)
+                put("losses", r.data?.losses ?: 0)
+            })
+            is ApiResult.Error -> sendResponse(reqId, "pvp_rating", JSONObject().put("error", r.message))
         }
     }
 

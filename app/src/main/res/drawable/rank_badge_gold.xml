@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 排名徽章-金 -->
+<!-- 鎺掑悕寰界珷-閲?-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-    <solid android:color="#3D2E10" />
-    <stroke android:width="2dp" android:color="#F0C040" />
+    <solid android:color="#FEF3C7" />
+    <stroke android:width="2dp" android:color="#F59E0B" />
 </shape>
