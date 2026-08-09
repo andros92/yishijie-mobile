@@ -48,6 +48,11 @@
             android:name=".ui.PvpActivity"
             android:exported="false" />
 
+        <!-- 礼包码兑换 -->
+        <activity
+            android:name=".ui.RedeemActivity"
+            android:exported="false" />
+
         <!-- 桥接中心页面 -->
         <activity
             android:name=".ui.BridgeActivity"

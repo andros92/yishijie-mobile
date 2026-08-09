@@ -43,6 +43,7 @@ class ProfileFragment : Fragment() {
         binding.rowExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
         binding.rowBridge.setOnClickListener { startActivity(Intent(requireContext(), BridgeActivity::class.java)) }
         binding.rowAnnouncement.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
+        binding.rowRedeem.setOnClickListener { startActivity(Intent(requireContext(), RedeemActivity::class.java)) }
         binding.rowUpdate.setOnClickListener { checkUpdate() }
         refresh()
     }
