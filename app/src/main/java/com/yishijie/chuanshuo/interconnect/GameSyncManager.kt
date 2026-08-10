@@ -159,36 +159,15 @@ class GameSyncManager private constructor(
         return fp.isNotBlank() && fp.length >= 8 && fp != "unknown" && fp != "NA" && fp != "null" && fp != "undefined"
     }
 
-    // 把手机端生成/确认的稳定指纹推给手环缓存，手环后续身份消息都带它
-    private fun pushFingerprintToWatch(fp: String) {
-        try {
-            interconn.sendToWatch(
-                JSONObject().put("tag", "game")
-                    .put("type", "save_device_fingerprint")
-                    .put("deviceFingerprint", fp),
-                onFail = {}
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "推送指纹失败: ${e.message}")
-        }
-    }
-
     // ========== 注册 ==========
     private suspend fun handleReqRegister(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val name = json.optString("playerName", "手环玩家")
         var fp = json.optString("deviceFingerprint", "")
         if (!fpValid(fp)) {
-            // 手环拿不到有效 deviceId 时，优先用手环节点ID生成稳定指纹（穿戴系统层标识，卸载手环App也不变）
-            val nodeFp = interconn.getWatchNodeId()?.let { "watch_" + it }
-            if (nodeFp != null && fpValid(nodeFp)) {
-                fp = nodeFp
-                pushFingerprintToWatch(fp)
-            } else {
-                // 绝不拿手机指纹代替手环指纹（会串号）；拿不到就明确提示重连
-                sendResponse(reqId, "register_result", JSONObject().put("error", "设备识别失败，请重新连接手环后再试"))
-                return
-            }
+            // 指纹拿不到就明确失败：账号必须一把钥匙到底，不做替代钥匙（会丢号/串号）
+            sendResponse(reqId, "register_result", JSONObject().put("error", "设备识别失败，请重新连接手环后再试"))
+            return
         }
         // 先记录手环指纹，后续所有 API 校验都依赖它
         deviceManager.setDeviceFingerprint(fp)
@@ -247,14 +226,7 @@ class GameSyncManager private constructor(
     private suspend fun handlePlayerId(json: JSONObject) {
         var fp = json.optString("deviceFingerprint", "")
         if (!fpValid(fp)) {
-            // 手环上报了无效指纹：先用手环节点ID补上，再退到手机指纹
-            val nodeFp = interconn.getWatchNodeId()?.let { "watch_" + it }
-            if (nodeFp != null && fpValid(nodeFp)) {
-                fp = nodeFp
-                pushFingerprintToWatch(fp)
-            } else {
-                fp = ""
-            }
+            fp = ""
         }
         if (fpValid(fp)) {
             deviceManager.setDeviceFingerprint(fp)
