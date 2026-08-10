@@ -70,6 +70,8 @@ class HomeFragment : Fragment() {
         }
         requireContext().registerReceiver(connectionReceiver, filter)
         refreshAccountUI()
+        // 切页重建 Fragment 后广播可能已经发过，主动读一次当前连接状态
+        refreshConnectionUI()
         loadDataSummary()
         if (!updateChecked) {
             updateChecked = true
@@ -155,6 +157,17 @@ class HomeFragment : Fragment() {
             if (connected) 0xFF059669.toInt() else 0xFFDC2626.toInt()
         )
         binding.tvConnDetail.text = detail
+    }
+
+    private fun refreshConnectionUI() {
+        if (_binding == null) return
+        val connected = try {
+            interconnManager.getState() == InterconnManager.ConnectionState.READY
+        } catch (e: Exception) {
+            false
+        }
+        binding.tvConnStatus.text = if (connected) "已连接" else "未连接"
+        binding.tvConnStatus.setTextColor(if (connected) 0xFF059669.toInt() else 0xFFDC2626.toInt())
     }
 
     private fun refreshAccountUI() {
