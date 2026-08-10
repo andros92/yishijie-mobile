@@ -185,14 +185,9 @@ class GameSyncManager private constructor(
                 fp = nodeFp
                 pushFingerprintToWatch(fp)
             } else {
-                // 连节点ID都拿不到：用手机指纹兜底，保证连接状态下一定能注册
-                val phoneFp = deviceManager.getPhoneFingerprint()
-                if (fpValid(phoneFp)) {
-                    fp = phoneFp
-                } else {
-                    sendResponse(reqId, "register_result", JSONObject().put("error", "设备识别失败，请重新连接手环后再试"))
-                    return
-                }
+                // 绝不拿手机指纹代替手环指纹（会串号）；拿不到就明确提示重连
+                sendResponse(reqId, "register_result", JSONObject().put("error", "设备识别失败，请重新连接手环后再试"))
+                return
             }
         }
         // 先记录手环指纹，后续所有 API 校验都依赖它
@@ -258,8 +253,7 @@ class GameSyncManager private constructor(
                 fp = nodeFp
                 pushFingerprintToWatch(fp)
             } else {
-                val phoneFp = deviceManager.getPhoneFingerprint()
-                fp = if (fpValid(phoneFp)) phoneFp else ""
+                fp = ""
             }
         }
         if (fpValid(fp)) {
