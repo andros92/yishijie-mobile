@@ -94,9 +94,11 @@ class GameSyncManager private constructor(
             "req_redeem" -> scope.launch { handleReqRedeem(json) }
             "req_leaderboard" -> scope.launch { handleReqLeaderboard(json) }
             "req_pvp_targets" -> scope.launch { handleReqPvpTargets(json) }
+            "req_pvp_matchmake" -> scope.launch { handleReqPvpMatchmake(json) }
             "req_pvp_defender" -> scope.launch { handleReqPvpDefender(json) }
             "req_pvp_report" -> scope.launch { handleReqPvpReport(json) }
             "req_pvp_rating" -> scope.launch { handleReqPvpRating(json) }
+            "req_pvp_matches" -> scope.launch { handleReqPvpMatches(json) }
             "req_pvp_room_create" -> scope.launch { handleReqPvpRoomCreate(json) }
             "req_pvp_room_join" -> scope.launch { handleReqPvpRoomJoin(json) }
             "req_pvp_room_status" -> scope.launch { handleReqPvpRoomStatus(json) }
@@ -485,6 +487,60 @@ class GameSyncManager private constructor(
         }
     }
 
+    private suspend fun handleReqPvpMatchmake(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "pvp_matchmake", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpMatchmake(me, fp, key) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { it ->
+                    arr.put(JSONObject().apply {
+                        put("playerId", it.playerId)
+                        put("playerName", it.playerName)
+                        put("rating", it.rating)
+                        put("lv", it.lv)
+                    })
+                }
+                sendResponse(reqId, "pvp_matchmake", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "pvp_matchmake", JSONObject().put("error", r.message))
+        }
+    }
+
+    private suspend fun handleReqPvpMatches(json: JSONObject) {
+        val reqId = json.optInt("_reqId", 0)
+        val me = deviceManager.getCurrentPlayerId()
+        val fp = deviceManager.getDeviceFingerprint() ?: json.optString("deviceFingerprint", "")
+        val key = ApiClient.apiKey
+        if (me == null || key == null) {
+            sendResponse(reqId, "pvp_matches", JSONObject().put("error", "手机端未登录账号"))
+            return
+        }
+        when (val r = ApiClient.safeApiCall { ApiClient.api.pvpMatches(me, fp, key) }) {
+            is ApiResult.Success -> {
+                val arr = JSONArray()
+                (r.data?.data ?: emptyList()).forEach { it ->
+                    arr.put(JSONObject().apply {
+                        put("id", it.id)
+                        put("opponent", it.opponent)
+                        put("win", it.win)
+                        put("delta", it.delta)
+                        put("createdAt", it.createdAt)
+                        put("log", JSONArray(it.log))
+                    })
+                }
+                sendResponse(reqId, "pvp_matches", JSONObject().put("data", arr))
+            }
+            is ApiResult.Error -> sendResponse(reqId, "pvp_matches", JSONObject().put("error", r.message))
+        }
+    }
+
     private suspend fun handleReqPvpDefender(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val me = deviceManager.getCurrentPlayerId()
@@ -527,7 +583,10 @@ class GameSyncManager private constructor(
             sendResponse(reqId, "pvp_report", JSONObject().put("error", "手机端未登录账号"))
             return
         }
-        val req = PvpReportRequest(me, fp, key, json.optString("targetId", ""), json.optBoolean("win", false))
+        val log = json.optJSONArray("log")?.let { arr ->
+            (0 until arr.length()).map { arr.optString(it) }
+        }
+        val req = PvpReportRequest(me, fp, key, json.optString("targetId", ""), json.optBoolean("win", false), log)
         when (val r = ApiClient.safeApiCall { ApiClient.api.pvpReport(req) }) {
             is ApiResult.Success -> sendResponse(reqId, "pvp_report", JSONObject().apply {
                 put("success", r.data?.success == true)

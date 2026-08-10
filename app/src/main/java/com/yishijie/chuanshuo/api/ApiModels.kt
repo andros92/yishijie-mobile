@@ -278,7 +278,8 @@ data class PvpReportRequest(
     val deviceFingerprint: String,
     val apiKey: String,
     val targetId: String,
-    val win: Boolean
+    val win: Boolean,
+    val log: List<String>? = null
 )
 
 data class PvpReportResponse(
