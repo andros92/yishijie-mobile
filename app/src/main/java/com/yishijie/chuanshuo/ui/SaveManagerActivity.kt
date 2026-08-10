@@ -133,19 +133,50 @@ class SaveManagerActivity : BaseActivity() {
         val bag = data.obj("bag")
         val cls = data.obj("class")
 
+        // 完整性检查：真实存档至少要有等级属性和背包
+        val incomplete = ArrayList<String>()
+        if (stats == null || !stats.has("lv")) incomplete.add("等级/属性(stats)")
+        if (bag == null) incomplete.add("背包(bag)")
+        if (incomplete.isNotEmpty()) {
+            lines.add("⚠️ 存档不完整（缺少 ${incomplete.joinToString("、")}）")
+            lines.add("   可能不是当前账号的有效存档，请谨慎恢复")
+        }
+
         val lv = stats?.num("lv", 1) ?: 1
+        val exp = stats?.num("exp", 0) ?: 0
         val clsName = classNames[cls?.str("key", "")] ?: "未就职"
-        lines.add("玩家：${deviceManager.getCurrentPlayerName() ?: "—"} · 等级 Lv.$lv · $clsName")
+        lines.add("🧑 ${deviceManager.getCurrentPlayerName() ?: "—"}")
+        lines.add("⭐ Lv.$lv · $clsName · 经验 $exp")
 
         val coin = bag?.num("coin", 0) ?: 0
-        lines.add("金币：$coin")
-        lines.add("生命：${stats?.num("hp", 0) ?: 0} · 蓝量：${stats?.num("mp", 0) ?: 0} · 饱食：${stats?.num("hunger", 0) ?: 0}")
+        lines.add("💰 金币 $coin")
+        lines.add("❤️ 生命 ${stats?.num("hp", 0) ?: 0} · 💙 蓝量 ${stats?.num("mp", 0) ?: 0} · 🍗 饱食 ${stats?.num("hunger", 0) ?: 0}")
 
         val gearCount = data.gearCount()
         val equipCount = data.equipCount()
         val pets = (data.obj("pets")?.getAsJsonArray("list")?.size() ?: 0)
         val petCases = (data.obj("pet_cases")?.getAsJsonArray("list")?.size() ?: 0)
-        lines.add("装备：${equipCount + gearCount} · 宠物：$pets · 宠物栏：$petCases")
+        lines.add("⚔️ 装备 ${equipCount + gearCount}（身上 $equipCount / 仓库 $gearCount）")
+        lines.add("🐾 宠物 $pets · 🧰 宠物栏 $petCases")
+
+        // 技能与天赋
+        val skillCount = cls?.getAsJsonArray("skills")?.size() ?: 0
+        val talentCount = cls?.obj("talents")?.keySet()?.size ?: 0
+        if (skillCount > 0 || talentCount > 0) {
+            lines.add("📖 技能 $skillCount 个 · 天赋点已用 $talentCount")
+        }
+
+        // 装备明细
+        val gearDetail = data.gearDetailText()
+        if (gearDetail.isNotEmpty()) lines.add("🛡 仓库装备：$gearDetail")
+
+        // 宠物明细
+        val petDetail = data.petDetailText()
+        if (petDetail.isNotEmpty()) lines.add("🐾 宠物明细：$petDetail")
+
+        // 试炼塔
+        val tower = data.obj("tower")?.num("bestFloor", 0) ?: 0
+        if (tower > 0) lines.add("🗼 试炼塔最高层：$tower")
 
         val mats = ArrayList<String>()
         val keys = arrayOf(
@@ -158,7 +189,7 @@ class SaveManagerActivity : BaseActivity() {
             if (c > 0) mats.add("$name×$c")
         }
         if (mats.isNotEmpty()) {
-            lines.add("关键物资：" + mats.joinToString("　"))
+            lines.add("📦 关键物资：" + mats.joinToString("　"))
         }
 
         binding.tvCloudInfo.text = lines.joinToString("\n")
@@ -206,6 +237,42 @@ class SaveManagerActivity : BaseActivity() {
             if (v != null && v.isJsonObject && v.asJsonObject.has("key")) n++
         }
         return n
+    }
+
+    private fun JsonObject.gearDetailText(): String {
+        val gear = obj("gear") ?: return ""
+        val parts = ArrayList<String>()
+        for (k in gear.keySet()) {
+            val arr = try {
+                gear.getAsJsonArray(k)
+            } catch (e: Exception) {
+                null
+            } ?: continue
+            if (arr.size() == 0) continue
+            val first = try {
+                arr.get(0).asJsonObject
+            } catch (e: Exception) {
+                null
+            }
+            val q = first?.str("quality", "") ?: ""
+            parts.add("$k×${arr.size()}" + if (q.isNotEmpty()) "（$q）" else "")
+        }
+        return parts.joinToString("、").take(120)
+    }
+
+    private fun JsonObject.petDetailText(): String {
+        val list = obj("pets")?.getAsJsonArray("list") ?: return ""
+        val parts = ArrayList<String>()
+        for (i in 0 until list.size()) {
+            val p = try {
+                list.get(i).asJsonObject
+            } catch (e: Exception) {
+                null
+            } ?: continue
+            val name = p.str("name", "") ?: p.str("key", "宠物")
+            parts.add("$name Lv.${p.num("lv", 1)}")
+        }
+        return parts.joinToString("、").take(120)
     }
 
     companion object {
