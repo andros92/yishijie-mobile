@@ -289,6 +289,7 @@ class GameSyncManager private constructor(
         }
         val request = ExchangeListRequest(
             playerId = me, deviceFingerprint = fp, apiKey = key,
+            save = json.optJSONObject("gameData")?.let { gsonObj(it.toString()) },
             key = json.optString("itemKey"), name = json.optString("itemName"),
             img = json.optString("itemImg", ""),
             qty = json.optInt("qty", 1), price = json.optInt("price", 0),
@@ -305,6 +306,7 @@ class GameSyncManager private constructor(
                 put("success", r.data?.success == true)
                 put("error", r.data?.error ?: "")
                 put("listingId", r.data?.listingId ?: 0)
+                r.data?.save?.let { put("save", JSONObject(it.toString())) }
             })
             is ApiResult.Error -> sendResponse(reqId, "exchange_listed", JSONObject().put("error", r.message))
         }
@@ -319,11 +321,15 @@ class GameSyncManager private constructor(
             sendResponse(reqId, "exchange_bought", JSONObject().put("error", "手机端未登录账号"))
             return
         }
-        val request = ExchangeBuyRequest(json.optInt("listingId", 0), me, fp, key)
+        val request = ExchangeBuyRequest(
+            json.optInt("listingId", 0), me, fp, key,
+            json.optJSONObject("gameData")?.let { gsonObj(it.toString()) }
+        )
         when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeBuy(request) }) {
             is ApiResult.Success -> sendResponse(reqId, "exchange_bought", JSONObject().apply {
                 put("success", r.data?.success == true)
                 put("error", r.data?.error ?: "")
+                r.data?.save?.let { put("save", JSONObject(it.toString())) }
             })
             is ApiResult.Error -> sendResponse(reqId, "exchange_bought", JSONObject().put("error", r.message))
         }
@@ -338,11 +344,15 @@ class GameSyncManager private constructor(
             sendResponse(reqId, "exchange_cancelled", JSONObject().put("error", "手机端未登录账号"))
             return
         }
-        val request = ExchangeCancelRequest(json.optInt("listingId", 0), me, fp, key)
+        val request = ExchangeCancelRequest(
+            json.optInt("listingId", 0), me, fp, key,
+            json.optJSONObject("gameData")?.let { gsonObj(it.toString()) }
+        )
         when (val r = ApiClient.safeApiCall { ApiClient.api.exchangeCancel(request) }) {
             is ApiResult.Success -> sendResponse(reqId, "exchange_cancelled", JSONObject().apply {
                 put("success", r.data?.success == true)
                 put("error", r.data?.error ?: "")
+                r.data?.save?.let { put("save", JSONObject(it.toString())) }
             })
             is ApiResult.Error -> sendResponse(reqId, "exchange_cancelled", JSONObject().put("error", r.message))
         }
@@ -387,12 +397,16 @@ class GameSyncManager private constructor(
             sendResponse(reqId, "mail_claimed", JSONObject().put("error", "手机端未登录账号"))
             return
         }
-        val req = MailClaimRequest(me, fp, key, json.optInt("mailId", 0))
+        val req = MailClaimRequest(
+            me, fp, key, json.optInt("mailId", 0),
+            json.optJSONObject("gameData")?.let { gsonObj(it.toString()) }
+        )
         when (val r = ApiClient.safeApiCall { ApiClient.api.claimMail(req) }) {
             is ApiResult.Success -> sendResponse(reqId, "mail_claimed", JSONObject().apply {
                 put("success", r.data?.success == true)
                 put("coins", r.data?.coins ?: 0)
                 if (r.data?.applied != null) put("applied", JSONObject(r.data.applied.toString()))
+                r.data?.save?.let { put("save", JSONObject(it.toString())) }
                 put("error", r.data?.error ?: "")
             })
             is ApiResult.Error -> sendResponse(reqId, "mail_claimed", JSONObject().put("error", r.message))

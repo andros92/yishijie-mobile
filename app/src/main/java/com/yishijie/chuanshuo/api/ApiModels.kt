@@ -50,6 +50,7 @@ data class ExchangeListRequest(
     val playerId: String,
     val deviceFingerprint: String,
     val apiKey: String,
+    val save: JsonObject? = null,
     val key: String,
     val name: String,
     val img: String = "",
@@ -70,6 +71,7 @@ data class ExchangeListRequest(
 data class ExchangeListResponse(
     val success: Boolean = false,
     val listingId: Int = 0,
+    val save: JsonObject? = null,
     val error: String? = null
 )
 
@@ -107,14 +109,16 @@ data class ExchangeBuyRequest(
     val listingId: Int,
     val buyerId: String,
     val deviceFingerprint: String,
-    val apiKey: String
+    val apiKey: String,
+    val save: JsonObject? = null
 )
 
 data class ExchangeCancelRequest(
     val listingId: Int,
     val playerId: String,
     val deviceFingerprint: String,
-    val apiKey: String
+    val apiKey: String,
+    val save: JsonObject? = null
 )
 
 data class TradeHistoryItem(
@@ -195,13 +199,15 @@ data class MailClaimRequest(
     val playerId: String,
     val deviceFingerprint: String,
     val apiKey: String,
-    val mailId: Int
+    val mailId: Int,
+    val save: JsonObject? = null
 )
 
 data class MailClaimResponse(
     val success: Boolean = false,
     val coins: Int = 0,
     val applied: JsonObject? = null,
+    val save: JsonObject? = null,
     val error: String? = null
 )
 
@@ -385,5 +391,6 @@ data class RenameResponse(
 
 data class BaseResponse(
     val success: Boolean = false,
+    val save: JsonObject? = null,
     val error: String? = null
 )
