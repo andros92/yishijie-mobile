@@ -154,13 +154,18 @@ class GameSyncManager private constructor(
         }
     }
 
+    // 部分手环 getDeviceId 返回 unknown/NA 等无效值，不能入库也不能拿去注册
+    private fun fpValid(fp: String): Boolean {
+        return fp.isNotBlank() && fp.length >= 8 && fp != "unknown" && fp != "NA" && fp != "null" && fp != "undefined"
+    }
+
     // ========== 注册 ==========
     private suspend fun handleReqRegister(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val name = json.optString("playerName", "手环玩家")
         val fp = json.optString("deviceFingerprint", "")
-        if (fp.isEmpty()) {
-            sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹为空"))
+        if (!fpValid(fp)) {
+            sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹无效，请重新连接手环后再试"))
             return
         }
         // 先记录手环指纹，后续所有 API 校验都依赖它
@@ -219,7 +224,7 @@ class GameSyncManager private constructor(
      */
     private suspend fun handlePlayerId(json: JSONObject) {
         val fp = json.optString("deviceFingerprint", "")
-        if (fp.isNotEmpty()) {
+        if (fpValid(fp)) {
             deviceManager.setDeviceFingerprint(fp)
             notifyFingerprintUpdated()
         }
