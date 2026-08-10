@@ -179,19 +179,21 @@ class GameSyncManager private constructor(
         val name = json.optString("playerName", "手环玩家")
         var fp = json.optString("deviceFingerprint", "")
         if (!fpValid(fp)) {
-            // 手环拿不到有效 deviceId 时，用手环节点ID生成稳定指纹（硬件绑定，不会变）
+            // 手环拿不到有效 deviceId 时，优先用手环节点ID生成稳定指纹（穿戴系统层标识，卸载手环App也不变）
             val nodeFp = interconn.getWatchNodeId()?.let { "watch_" + it }
             if (nodeFp != null && fpValid(nodeFp)) {
                 fp = nodeFp
                 pushFingerprintToWatch(fp)
             } else {
-                sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹无效，请重新连接手环后再试"))
-                return
+                // 连节点ID都拿不到：用手机指纹兜底，保证连接状态下一定能注册
+                val phoneFp = deviceManager.getPhoneFingerprint()
+                if (fpValid(phoneFp)) {
+                    fp = phoneFp
+                } else {
+                    sendResponse(reqId, "register_result", JSONObject().put("error", "设备识别失败，请重新连接手环后再试"))
+                    return
+                }
             }
-        }
-        if (fp.isEmpty()) {
-            sendResponse(reqId, "register_result", JSONObject().put("error", "设备指纹无效，请重新连接手环后再试"))
-            return
         }
         // 先记录手环指纹，后续所有 API 校验都依赖它
         deviceManager.setDeviceFingerprint(fp)
@@ -250,13 +252,14 @@ class GameSyncManager private constructor(
     private suspend fun handlePlayerId(json: JSONObject) {
         var fp = json.optString("deviceFingerprint", "")
         if (!fpValid(fp)) {
-            // 手环上报了无效指纹：用手环节点ID补上，并推给手环缓存
+            // 手环上报了无效指纹：先用手环节点ID补上，再退到手机指纹
             val nodeFp = interconn.getWatchNodeId()?.let { "watch_" + it }
             if (nodeFp != null && fpValid(nodeFp)) {
                 fp = nodeFp
                 pushFingerprintToWatch(fp)
             } else {
-                fp = ""
+                val phoneFp = deviceManager.getPhoneFingerprint()
+                fp = if (fpValid(phoneFp)) phoneFp else ""
             }
         }
         if (fpValid(fp)) {
