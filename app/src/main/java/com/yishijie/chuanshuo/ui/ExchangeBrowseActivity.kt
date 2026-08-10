@@ -112,7 +112,7 @@ class ExchangeBrowseActivity : BaseActivity() {
             radius = dp(14).toFloat()
             elevation = dp(1).toFloat()
             setCardBackgroundColor(Color.parseColor("#1A2242"))
-            strokeColor = Color.parseColor("#2EFFFFFF")
+            strokeColor = Color.parseColor("#33F5C453")
             strokeWidth = 1
         }
         val inner = LinearLayout(this).apply {
@@ -120,16 +120,51 @@ class ExchangeBrowseActivity : BaseActivity() {
             setPadding(dp(12), dp(10), dp(12), dp(10))
         }
         val pet = item.pet?.let { JSONObject(it.toString()) }
+        // 分类胶囊
+        val cat = when (item.category) {
+            "pet" -> "宠物" to "#D9925A"
+            "gear" -> "装备" to "#7AD8FF"
+            else -> "物品" to "#4FD8A8"
+        }
+        val head = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val catColor = when (cat.first) {
+            "装备" -> "#7AD8FF"
+            "宠物" -> "#D9925A"
+            else -> "#4FD8A8"
+        }
+        head.addView(TextView(this).apply {
+            text = cat.first
+            textSize = 11f
+            setTextColor(Color.parseColor(catColor))
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding(dp(8), dp(3), dp(8), dp(3))
+            setBackgroundColor(Color.parseColor("#22" + catColor.substring(1)))
+        })
         val title = if (pet != null) {
-            "宠物·${pet.optString("name", item.item_name)} Lv.${pet.optInt("lv", 1)}"
+            "宠物 · ${pet.optString("name", item.item_name)} Lv.${pet.optInt("lv", 1)}"
         } else {
             val q = if (item.quality.isNotEmpty()) "[${item.quality}]" else ""
             "${item.item_name}$q ×${item.qty}"
         }
-        inner.addView(text(title, 15f, Color.parseColor("#F4F6FF"), true))
-        inner.addView(text("${item.price} 金币 · ${item.seller_name}", 13f, Color.parseColor("#F5C453")))
+        head.addView(text(title, 15f, Color.parseColor(qualityColor(item.quality)), true).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setPadding(dp(8), 0, 0, 0)
+        })
+        inner.addView(head)
+        inner.addView(text("${item.price} 金币", 16f, Color.parseColor("#F5C453"), true).apply {
+            setPadding(dp(2), dp(6), 0, 0)
+        })
+        inner.addView(text("卖家 ${item.seller_name}", 12f, Color.parseColor("#9AA3C0")).apply {
+            setPadding(dp(2), dp(2), 0, 0)
+        })
         if (item.item_uid.isNotEmpty()) {
-            inner.addView(text("ID: ${item.item_uid}", 11f, Color.parseColor("#5D6B8C")))
+            inner.addView(text("ID: ${item.item_uid}", 11f, Color.parseColor("#5D6B8C")).apply {
+                setPadding(dp(2), dp(2), 0, 0)
+            })
         }
         card.addView(inner)
         val lp = LinearLayout.LayoutParams(
@@ -138,6 +173,16 @@ class ExchangeBrowseActivity : BaseActivity() {
         ).apply { bottomMargin = dp(8) }
         card.layoutParams = lp
         return card
+    }
+
+    private fun qualityColor(q: String): String {
+        return when (q) {
+            "fine" -> "#7EC850"
+            "rare" -> "#5AA8E8"
+            "epic" -> "#C070E8"
+            "legendary" -> "#FFA050"
+            else -> "#F4F6FF"
+        }
     }
 
     private fun text(txt: String, size: Float = 14f, color: Int = Color.parseColor("#F4F6FF"), bold: Boolean = false): TextView {
