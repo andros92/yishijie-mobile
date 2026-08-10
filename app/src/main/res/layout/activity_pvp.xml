@@ -14,7 +14,7 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="12dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="10dp">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -33,59 +33,114 @@
             android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:layout_marginStart="12dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="8dp">
-
-        <TextView
-            android:id="@+id/tvRating"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="段位分：--"
-            android:textSize="14sp"
-            android:textColor="@color/text_gold"
-            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvDaily"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="今日剩余 -- 次"
+            android:text="今日 -- 次"
             android:textSize="13sp"
-            android:textColor="@color/text_secondary" />
+            android:textColor="@color/text_gold"
+            android:textStyle="bold"
+            android:background="@drawable/bg_status_pill"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
     </LinearLayout>
 
+    <!-- 段位卡 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_rank_card"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="当前段位"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="26sp"
+                android:textColor="@color/text_gold"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/tvWins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="胜 -- · 负 --"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏆 竞技排行"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/tvRankHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="匹配对手提升名次"
+                android:textSize="12sp"
+                android:textColor="@color/text_gold"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 页签 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:paddingTop="4dp"
-        android:paddingBottom="8dp">
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp">
 
         <TextView
             android:id="@+id/tabMatch"
-            android:layout_width="120dp"
-            android:layout_height="34dp"
+            android:layout_width="140dp"
+            android:layout_height="36dp"
             android:gravity="center"
             android:text="匹配战"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:background="@drawable/bg_btn_gold" />
+            android:background="@drawable/bg_btn_gold_gradient" />
 
         <TextView
             android:id="@+id/tabRoom"
-            android:layout_width="120dp"
-            android:layout_height="34dp"
+            android:layout_width="140dp"
+            android:layout_height="36dp"
             android:layout_marginStart="10dp"
             android:gravity="center"
             android:text="房间对战"
@@ -100,12 +155,12 @@
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingBottom="6dp">
+        android:paddingBottom="10dp">
 
         <TextView
             android:id="@+id/btnLeaderboard"
             android:layout_width="0dp"
-            android:layout_height="36dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
             android:layout_marginEnd="6dp"
             android:gravity="center"
@@ -113,20 +168,20 @@
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:background="@drawable/bg_chip" />
+            android:background="@drawable/bg_card_player" />
 
         <TextView
             android:id="@+id/btnReplay"
             android:layout_width="0dp"
-            android:layout_height="36dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
             android:layout_marginStart="6dp"
             android:gravity="center"
-            android:text="📼 战绩回放"
+            android:text="🎬 战绩回放"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:background="@drawable/bg_chip" />
+            android:background="@drawable/bg_card_player" />
     </LinearLayout>
 
     <ScrollView
@@ -150,14 +205,24 @@
                 <TextView
                     android:id="@+id/btnStartMatch"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="52dp"
                     android:gravity="center"
                     android:text="开始匹配"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_btn_gold"
-                    android:layout_marginBottom="10dp" />
+                    android:textColor="#0B0F1F"
+                    android:background="@drawable/bg_btn_gold_gradient"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/tvMatchHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp" />
 
                 <LinearLayout
                     android:id="@+id/llMatch"
@@ -209,8 +274,8 @@
                         android:text="创建房间"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:background="@drawable/bg_btn_gold" />
+                        android:textColor="#0B0F1F"
+                        android:background="@drawable/bg_btn_gold_gradient" />
                 </LinearLayout>
 
                 <TextView
@@ -223,7 +288,7 @@
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_chip" />
+                    android:background="@drawable/bg_card_player" />
 
                 <TextView
                     android:id="@+id/tvRoomStatus"
@@ -244,8 +309,8 @@
                     android:text="开战"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_btn_gold" />
+                    android:textColor="#0B0F1F"
+                    android:background="@drawable/bg_btn_gold_gradient" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

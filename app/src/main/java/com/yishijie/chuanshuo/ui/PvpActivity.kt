@@ -101,8 +101,9 @@ class PvpActivity : BaseActivity() {
         lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.pvpRating(me) }) {
                 is ApiResult.Success -> {
-                    binding.tvRating.text = "段位分：${r.data?.rating ?: 1000}"
-                    binding.tvDaily.text = "今日剩余 ${r.data?.dailyLeft ?: 12} 次"
+                    binding.tvRating.text = "${r.data?.rating ?: 1000}"
+                    binding.tvWins.text = "胜 ${r.data?.wins ?: 0} · 负 ${r.data?.losses ?: 0}"
+                    binding.tvDaily.text = "今日 ${r.data?.dailyLeft ?: 12} 次"
                 }
                 is ApiResult.Error -> status("获取段位失败：${r.message}")
             }
@@ -134,19 +135,17 @@ class PvpActivity : BaseActivity() {
                     binding.llMatch.removeAllViews()
                     val list = r.data?.data ?: emptyList()
                     if (list.isEmpty()) {
-                        binding.llMatch.addView(text("暂无可匹配的对手，稍后再试", 14f, Color.parseColor("#9AA3C0")))
+                        binding.tvMatchHint.text = "暂无可匹配的对手，稍后再试"
                         binding.btnStartMatch.text = "重新匹配"
                         return@launch
                     }
-                    binding.llMatch.addView(
-                        text("已匹配 ${list.size} 位对手（段位接近），点“挑战”开战", 13f, Color.parseColor("#9AA3C0"))
-                    )
+                    binding.tvMatchHint.text = "已匹配 ${list.size} 位对手 · 段位接近 · 点击挑战"
                     list.forEach { t -> binding.llMatch.addView(targetRow(t)) }
                     binding.btnStartMatch.text = "重新匹配"
                 }
                 is ApiResult.Error -> {
                     binding.llMatch.removeAllViews()
-                    binding.llMatch.addView(text("匹配失败：${r.message}", 14f, Color.parseColor("#FF6B7A")))
+                    binding.tvMatchHint.text = "匹配失败：${r.message}"
                 }
             }
         }
@@ -156,79 +155,177 @@ class PvpActivity : BaseActivity() {
         val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(8), dp(4), dp(8), dp(4))
+            setPadding(dp(2), dp(2), dp(2), dp(2))
         }
-        box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")))
         val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_card_player, theme)
+            setPadding(dp(6), dp(8), dp(6), dp(8))
+            addView(text("竞技场排行榜", 19f, Color.parseColor("#F5C453"), true).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, dp(8), 0, dp(2))
+            })
+            addView(text("段位定胜负 · 前三名授勋", 12f, Color.parseColor("#9AA3C0")).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, 0, 0, dp(12))
+            })
+            box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")).apply { gravity = Gravity.CENTER })
+            addView(scroll)
+        }
         val dialog = AlertDialog.Builder(this)
-            .setTitle("竞技场排行榜")
-            .setView(scroll)
+            .setView(panel)
             .setPositiveButton("关闭", null)
             .create()
         dialog.show()
+        dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.pvpLeaderboard(c.first, c.second, c.third) }) {
                 is ApiResult.Success -> {
                     box.removeAllViews()
                     val list = r.data?.data ?: emptyList()
                     if (list.isEmpty()) {
-                        box.addView(text("暂无排名，快去打匹配吧", 14f, Color.parseColor("#9AA3C0")))
+                        box.addView(text("暂无排名，快去打匹配吧", 14f, Color.parseColor("#9AA3C0")).apply {
+                            gravity = Gravity.CENTER
+                            setPadding(0, dp(20), 0, dp(20))
+                        })
                         return@launch
                     }
-                    list.forEachIndexed { i, it ->
-                        box.addView(
-                            text(
-                                "${i + 1}. ${it.player_name.ifEmpty { "未知玩家" }} · ${it.rating} 分（${it.wins}胜${it.losses}负）",
-                                13f, Color.parseColor("#C8D4E8")
-                            )
-                        )
-                    }
+                    list.forEachIndexed { i, it -> box.addView(leaderboardRow(i + 1, it.player_name, it.rating, it.wins, it.losses)) }
                 }
                 is ApiResult.Error -> {
                     box.removeAllViews()
-                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")))
+                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")).apply { gravity = Gravity.CENTER })
                 }
             }
         }
+    }
+
+    private fun rankBadge(rank: Int): TextView {
+        val res = when (rank) {
+            1 -> com.yishijie.chuanshuo.R.drawable.rank_badge_gold
+            2 -> com.yishijie.chuanshuo.R.drawable.rank_badge_silver
+            3 -> com.yishijie.chuanshuo.R.drawable.rank_badge_bronze
+            else -> com.yishijie.chuanshuo.R.drawable.rank_badge_normal
+        }
+        val color = when (rank) {
+            1 -> "#F5C453"
+            2 -> "#B8C2E0"
+            3 -> "#D9925A"
+            else -> "#9AA3C0"
+        }
+        return TextView(this).apply {
+            text = "$rank"
+            textSize = 14f
+            setTextColor(Color.parseColor(color))
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            gravity = Gravity.CENTER
+            background = resources.getDrawable(res, theme)
+            layoutParams = LinearLayout.LayoutParams(dp(36), dp(36))
+        }
+    }
+
+    private fun leaderboardRow(rank: Int, name: String, rating: Int, wins: Int, losses: Int): LinearLayout {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_status_pill, theme)
+        }
+        row.addView(rankBadge(rank))
+        val info = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setPadding(dp(12), 0, dp(8), 0)
+        }
+        info.addView(text(name.ifEmpty { "未知玩家" }, 15f, Color.parseColor("#F4F6FF"), true))
+        info.addView(text("$wins 胜 · $losses 负", 11f, Color.parseColor("#9AA3C0")))
+        row.addView(info)
+        row.addView(text("$rating", 18f, Color.parseColor("#F5C453"), true))
+        row.addView(text(" 分", 11f, Color.parseColor("#9AA3C0")))
+        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        lp.bottomMargin = dp(8)
+        row.layoutParams = lp
+        return row
     }
 
     private fun showMatchHistory() {
         val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(8), dp(4), dp(8), dp(4))
+            setPadding(dp(2), dp(2), dp(2), dp(2))
         }
-        box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")))
         val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_card_player, theme)
+            setPadding(dp(6), dp(8), dp(6), dp(8))
+            addView(text("我的对战", 19f, Color.parseColor("#F5C453"), true).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, dp(8), 0, dp(2))
+            })
+            addView(text("点击战绩查看回放", 12f, Color.parseColor("#9AA3C0")).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, 0, 0, dp(12))
+            })
+            box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")).apply { gravity = Gravity.CENTER })
+            addView(scroll)
+        }
         val dialog = AlertDialog.Builder(this)
-            .setTitle("我的对战 · 点战绩看回放")
-            .setView(scroll)
+            .setView(panel)
             .setPositiveButton("关闭", null)
             .create()
         dialog.show()
+        dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), (resources.displayMetrics.heightPixels * 0.8).toInt())
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.pvpMatches(c.first, c.second, c.third) }) {
                 is ApiResult.Success -> {
                     box.removeAllViews()
                     val list = r.data?.data ?: emptyList()
                     if (list.isEmpty()) {
-                        box.addView(text("暂无对战记录", 14f, Color.parseColor("#9AA3C0")))
+                        box.addView(text("暂无对战记录", 14f, Color.parseColor("#9AA3C0")).apply {
+                            gravity = Gravity.CENTER
+                            setPadding(0, dp(20), 0, dp(20))
+                        })
                         return@launch
                     }
                     list.forEach { m ->
-                        val row = text(
-                            "vs ${m.opponent} · ${if (m.win) "胜" else "负"} ${if (m.delta >= 0) "+" else ""}${m.delta} · ${m.createdAt}",
-                            13f,
-                            if (m.win) Color.parseColor("#5CFFB8") else Color.parseColor("#FF9A9A")
-                        )
-                        row.setPadding(dp(4), dp(8), dp(4), dp(8))
-                        row.setOnClickListener { showReplay(m.opponent, m.log) }
-                        box.addView(row)
+                        val row = LinearLayout(this@PvpActivity).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            gravity = Gravity.CENTER_VERTICAL
+                            setPadding(dp(12), dp(10), dp(12), dp(10))
+                            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_status_pill, theme)
+                            setOnClickListener { showReplay(m.opponent, m.log) }
+                        }
+                        val pill = text(if (m.win) "胜" else "负", 14f, Color.parseColor("#0B0F1F"), true).apply {
+                            gravity = Gravity.CENTER
+                            setPadding(dp(10), dp(4), dp(10), dp(4))
+                            background = resources.getDrawable(
+                                if (m.win) com.yishijie.chuanshuo.R.drawable.bg_btn_gold_gradient else com.yishijie.chuanshuo.R.drawable.bg_chip,
+                                theme
+                            )
+                        }
+                        row.addView(pill)
+                        val info = LinearLayout(this@PvpActivity).apply {
+                            orientation = LinearLayout.VERTICAL
+                            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                            setPadding(dp(12), 0, dp(8), 0)
+                        }
+                        info.addView(text("vs ${m.opponent}", 15f, Color.parseColor("#F4F6FF"), true))
+                        info.addView(text("${if (m.delta >= 0) "+" else ""}${m.delta} · ${m.createdAt}", 11f, Color.parseColor("#9AA3C0")))
+                        row.addView(info)
+                        row.addView(text("回放", 13f, Color.parseColor("#F5C453"), true))
+                        box.addView(row, LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        ).apply { bottomMargin = dp(8) })
                     }
                 }
                 is ApiResult.Error -> {
                     box.removeAllViews()
-                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")))
+                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")).apply { gravity = Gravity.CENTER })
                 }
             }
         }
@@ -237,10 +334,10 @@ class PvpActivity : BaseActivity() {
     private fun showReplay(opponent: String, log: List<String>) {
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(8), dp(4), dp(8), dp(4))
+            setPadding(dp(2), dp(2), dp(2), dp(2))
         }
         if (log.isEmpty()) {
-            box.addView(text("本场没有可回放的日志", 13f, Color.parseColor("#9AA3C0")))
+            box.addView(text("本场没有可回放的日志", 13f, Color.parseColor("#9AA3C0")).apply { gravity = Gravity.CENTER })
         } else {
             log.forEach { line ->
                 val color = when {
@@ -248,52 +345,72 @@ class PvpActivity : BaseActivity() {
                     line.contains("胜利") || line.contains("败北") || line.contains("获胜") -> "#F4F6FF"
                     else -> "#C8D4E8"
                 }
-                box.addView(text(line, 13f, Color.parseColor(color)))
+                box.addView(text(line, 13f, Color.parseColor(color)).apply { setPadding(dp(4), dp(2), dp(4), dp(2)) })
             }
         }
         val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_card_player, theme)
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+            addView(text("战斗回放 · vs $opponent", 18f, Color.parseColor("#F5C453"), true).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, dp(6), 0, dp(10))
+            })
+            addView(scroll)
+        }
         AlertDialog.Builder(this)
-            .setTitle("战斗回放 · vs $opponent")
-            .setView(scroll)
+            .setView(panel)
             .setPositiveButton("关闭", null)
             .show()
     }
 
     private fun targetRow(t: PvpTargetItem): MaterialCardView {
         val card = MaterialCardView(this).apply {
-            radius = dp(14).toFloat()
-            elevation = dp(1).toFloat()
+            radius = dp(16).toFloat()
+            elevation = dp(2).toFloat()
             setCardBackgroundColor(Color.parseColor("#1A2242"))
-            strokeColor = Color.parseColor("#2EFFFFFF")
+            strokeColor = Color.parseColor("#33F5C453")
             strokeWidth = 1
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(10) }
         }
         val inner = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(8))
+            setPadding(dp(14), dp(12), dp(14), dp(12))
         }
+        val avatar = TextView(this).apply {
+            text = "⚔"
+            textSize = 20f
+            gravity = Gravity.CENTER
+            setTextColor(Color.parseColor("#F5C453"))
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_avatar, theme)
+            layoutParams = LinearLayout.LayoutParams(dp(46), dp(46))
+        }
+        inner.addView(avatar)
         val info = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setPadding(dp(12), 0, dp(8), 0)
         }
-        info.addView(text(t.playerName, 15f, Color.parseColor("#F4F6FF"), true))
+        info.addView(text(t.playerName, 16f, Color.parseColor("#F4F6FF"), true))
         info.addView(text("Lv.${t.lv} · 段位 ${t.rating}", 12f, Color.parseColor("#9AA3C0")))
         inner.addView(info)
         val btn = TextView(this).apply {
             text = "挑战"
-            textSize = 13f
+            textSize = 14f
             setTextColor(Color.parseColor("#0B0F1F"))
             setTypeface(null, android.graphics.Typeface.BOLD)
             gravity = Gravity.CENTER
-            setPadding(dp(14), dp(8), dp(14), dp(8))
-            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_btn_gold, theme)
+            setPadding(dp(20), dp(9), dp(20), dp(9))
+            background = resources.getDrawable(com.yishijie.chuanshuo.R.drawable.bg_btn_gold_gradient, theme)
             setOnClickListener { confirmChallenge(t) }
         }
         inner.addView(btn)
         card.addView(inner)
-        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        lp.bottomMargin = dp(8)
-        card.layoutParams = lp
         return card
     }
 
