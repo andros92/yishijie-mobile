@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 /**
  * 礼包码兑换：兑换成功后奖励发到游戏邮箱（手机端直接调用服务器）
  */
-class RedeemActivity : AppCompatActivity() {
+class RedeemActivity : BaseActivity() {
 
     private lateinit var binding: ActivityRedeemBinding
     private lateinit var deviceManager: DeviceManager
@@ -24,7 +24,7 @@ class RedeemActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRedeemBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
         deviceManager = DeviceManager.getInstance(this)
 
         binding.btnBack.setOnClickListener { finish() }

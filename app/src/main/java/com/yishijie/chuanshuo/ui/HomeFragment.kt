@@ -100,6 +100,7 @@ class HomeFragment : Fragment() {
             binding.tvToast.text = "已断开连接"
         }
         binding.btnBridge.setOnClickListener {
+            if (!ClickGuard.allow()) return@setOnClickListener
             startActivity(Intent(requireContext(), BridgeActivity::class.java))
         }
         binding.btnRegister.setOnClickListener {
@@ -126,10 +127,22 @@ class HomeFragment : Fragment() {
                 }
             })
         }
-        binding.btnSave.setOnClickListener { startActivity(Intent(requireContext(), SaveManagerActivity::class.java)) }
-        binding.btnExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
-        binding.btnAnnouncements.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
-        binding.btnRecharge.setOnClickListener { (activity as? MainActivity)?.switchTab(MainActivity.TAB_RECHARGE) }
+        binding.btnSave.setOnClickListener {
+            if (!ClickGuard.allow()) return@setOnClickListener
+            startActivity(Intent(requireContext(), SaveManagerActivity::class.java))
+        }
+        binding.btnExchange.setOnClickListener {
+            if (!ClickGuard.allow()) return@setOnClickListener
+            startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java))
+        }
+        binding.btnAnnouncements.setOnClickListener {
+            if (!ClickGuard.allow()) return@setOnClickListener
+            startActivity(Intent(requireContext(), AnnouncementActivity::class.java))
+        }
+        binding.btnRecharge.setOnClickListener {
+            if (!ClickGuard.allow()) return@setOnClickListener
+            (activity as? MainActivity)?.switchTab(MainActivity.TAB_RECHARGE)
+        }
         binding.btnRefreshData.setOnClickListener {
             loadDataSummary()
             binding.tvToast.text = "正在刷新数据…"
@@ -199,10 +212,15 @@ class HomeFragment : Fragment() {
         val bag = data.optJSONObject("bag")
         val cls = data.optJSONObject("class")
         val lv = stats?.optLong("lv", 1L) ?: 1L
+        val exp = stats?.optLong("exp", 0L) ?: 0L
         val clsName = classNames[cls?.optString("key", "")] ?: "未就职"
-        lines.add("Lv.$lv · $clsName")
-        lines.add("金币：${bag?.optLong("coin", 0L) ?: 0L}")
-        lines.add("生命 ${stats?.optLong("hp", 0L) ?: 0L} · 蓝量 ${stats?.optLong("mp", 0L) ?: 0L} · 饱食 ${stats?.optLong("hunger", 0L) ?: 0L}")
+        val name = deviceManager.getCurrentPlayerName() ?: "冒险者"
+        lines.add("🧑 $name · Lv.$lv · $clsName")
+        lines.add("⭐ 经验 $exp")
+        lines.add("💰 金币 ${bag?.optLong("coin", 0L) ?: 0L}")
+        lines.add("❤️ 生命 ${stats?.optLong("hp", 0L) ?: 0L}")
+        lines.add("💙 蓝量 ${stats?.optLong("mp", 0L) ?: 0L}")
+        lines.add("🍗 饱食 ${stats?.optLong("hunger", 0L) ?: 0L}/100")
 
         var gear = 0
         data.optJSONObject("gear")?.let { g ->
@@ -223,22 +241,38 @@ class HomeFragment : Fragment() {
         }
         val pets = data.optJSONObject("pets")?.optJSONArray("list")?.length() ?: 0
         val petCases = data.optJSONObject("pet_cases")?.optJSONArray("list")?.length() ?: 0
-        lines.add("装备 $gear+$equip · 宠物 $pets · 宠物栏 $petCases")
+        val bagSlots = countBagSlots(bag, gear + equip, pets, petCases)
+        lines.add("⚔️ 装备 ${gear + equip}")
+        lines.add("🐾 宠物 $pets · 🧰 宠物栏 $petCases")
+        lines.add("🎒 背包 $bagSlots/60")
 
         val mats = ArrayList<String>()
         val keys = arrayOf(
-            "wood" to "木材", "stone" to "石块", "copper" to "铜矿", "iron" to "铁矿",
-            "spirit_crystal" to "灵晶", "gem_core" to "宝石核心", "pet_case" to "宠物栏",
-            "boss_ticket" to "BOSS券"
+            "wood" to "🪵木材", "stone" to "🪨石块", "copper" to "🔶铜矿", "iron" to "⛓️铁矿",
+            "gold" to "🟡金矿", "spirit_crystal" to "💎灵晶", "gem_core" to "💠宝石核心",
+            "pet_case" to "🧰宠物栏", "boss_ticket" to "🎫BOSS券",
+            "healing_potion" to "🧪治疗药水", "mana_potion" to "🔵蓝量药水"
         )
         for ((k, name) in keys) {
             val c = bag?.optLong(k, 0L) ?: 0L
             if (c > 0) mats.add("$name×$c")
         }
         if (mats.isNotEmpty()) {
-            lines.add("物资：" + mats.joinToString("　"))
+            lines.add("📦 物资：" + mats.joinToString("　"))
         }
         binding.tvDataSummary.text = lines.joinToString("\n")
+    }
+
+    private fun countBagSlots(bag: JSONObject?, gearCount: Int, pets: Int, petCases: Int): Int {
+        var types = 0
+        bag?.keys()?.let { it ->
+            while (it.hasNext()) {
+                val k = it.next()
+                if (k == "coin") continue
+                if ((bag.optLong(k, 0L) ?: 0L) > 0) types++
+            }
+        }
+        return types + gearCount + petCases
     }
 
     private fun checkUpdate() {

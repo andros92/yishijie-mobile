@@ -21,7 +21,6 @@ import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.FragmentRechargeBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 class RechargeFragment : Fragment() {
 
@@ -38,8 +37,6 @@ class RechargeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         deviceManager = DeviceManager.getInstance(requireContext())
         binding.cardPackage.setOnClickListener { handlePurchaseClick() }
-        binding.btnCheckOrders.setOnClickListener { checkOrders() }
-        binding.btnSyncSave.setOnClickListener { syncSaveToBand() }
     }
 
     override fun onDestroyView() {
@@ -109,52 +106,6 @@ class RechargeFragment : Fragment() {
                 }
                 is ApiResult.Error -> status("获取支付链接失败: ${r.message}")
             }
-        }
-    }
-
-    private fun checkOrders() {
-        val me = deviceManager.getCurrentPlayerId() ?: run { status("请先登录账号"); return }
-        val fp = deviceManager.getDeviceFingerprint() ?: run { status("请先连接手环"); return }
-        val key = ApiClient.apiKey ?: run { status("缺少 apiKey，请重新登录"); return }
-        lifecycleScope.launch {
-            when (val r = ApiClient.safeApiCall { ApiClient.api.paymentOrders(me, fp, key) }) {
-                is ApiResult.Success -> {
-                    val paid = (r.data?.data ?: emptyList()).filter { it.status == "paid" }
-                    if (paid.isEmpty()) {
-                        status("暂无到账记录，支付后请稍等片刻再查询")
-                    } else {
-                        val last = paid.first()
-                        status("已到账：¥${last.amount} → ${last.qty} 金币，已发到邮箱，请到邮箱领取\n订单 ${last.order_id}")
-                    }
-                }
-                is ApiResult.Error -> status("查询失败: ${r.message}")
-            }
-        }
-    }
-
-    private fun syncSaveToBand() {
-        if (deviceManager.getCurrentPlayerId() == null) { status("请先登录账号"); return }
-        status("正在从服务器同步存档...")
-        lifecycleScope.launch {
-            val save = GameSyncManager.getInstance(requireContext()).downloadSaveFromServer()
-            if (save == null) {
-                status("服务器没有存档，请先在手环上传")
-                return@launch
-            }
-            GameSyncManager.getInstance(requireContext()).uploadSaveToBand(
-                JSONObject(save.toString()),
-                object : GameSyncManager.SaveCallback {
-                    override fun onSaveUploaded(success: Boolean, message: String) {
-                        if (_binding == null) return
-                        status(if (success) "已同步到手环，打开手环即可看到金币" else "同步失败：$message")
-                    }
-                    override fun onSaveDownloaded(data: JSONObject?) {}
-                    override fun onError(error: String) {
-                        if (_binding == null) return
-                        status("同步失败：$error")
-                    }
-                }
-            )
         }
     }
 

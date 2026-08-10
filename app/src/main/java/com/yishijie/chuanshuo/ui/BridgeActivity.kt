@@ -12,7 +12,7 @@ import com.yishijie.chuanshuo.databinding.ActivityBridgeBinding
 import com.yishijie.chuanshuo.interconnect.InterconnManager
 import com.yishijie.chuanshuo.service.CompanionService
 
-class BridgeActivity : AppCompatActivity() {
+class BridgeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBridgeBinding
     private lateinit var deviceManager: DeviceManager
@@ -48,7 +48,7 @@ class BridgeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBridgeBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
 
         deviceManager = DeviceManager.getInstance(this)
         interconnManager = InterconnManager.getInstance(this)

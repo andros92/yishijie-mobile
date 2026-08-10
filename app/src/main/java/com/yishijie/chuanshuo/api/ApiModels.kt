@@ -310,6 +310,34 @@ data class PvpRatingResponse(
     val error: String? = null
 )
 
+data class PvpLeaderboardItem(
+    val player_name: String = "",
+    val rating: Int = 1000,
+    val wins: Int = 0,
+    val losses: Int = 0
+)
+
+data class PvpLeaderboardResponse(
+    val success: Boolean = false,
+    val data: List<PvpLeaderboardItem> = emptyList(),
+    val error: String? = null
+)
+
+data class PvpMatchRecord(
+    val id: Int = 0,
+    val opponent: String = "",
+    val win: Boolean = false,
+    val delta: Int = 0,
+    val createdAt: String = "",
+    val log: List<String> = emptyList()
+)
+
+data class PvpMatchesResponse(
+    val success: Boolean = false,
+    val data: List<PvpMatchRecord> = emptyList(),
+    val error: String? = null
+)
+
 // ========== 爱发电充值 ==========
 data class AfdianUrlResponse(
     val success: Boolean = false,

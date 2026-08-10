@@ -20,7 +20,7 @@ import org.json.JSONObject
  * 交易所浏览页：只读查看在售挂单（物品/装备/宠物），不做任何交易操作。
  * 挂单、购买、撤单只能通过手环端进行。
  */
-class ExchangeBrowseActivity : AppCompatActivity() {
+class ExchangeBrowseActivity : BaseActivity() {
 
     private lateinit var binding: ActivityExchangeBrowseBinding
     private var category: String? = null
@@ -30,7 +30,7 @@ class ExchangeBrowseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExchangeBrowseBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
 
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSearch.setOnClickListener { page = 1; loadListings() }

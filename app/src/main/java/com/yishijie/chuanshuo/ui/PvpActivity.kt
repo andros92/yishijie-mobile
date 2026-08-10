@@ -28,7 +28,7 @@ import kotlin.coroutines.resume
  * PVP 竞技场（纯手机端）：匹配战由服务端模拟并结算，房间对战双方就绪后服务端模拟。
  * 开战前先从手环拉取最新存档上传，保证服务端用的是玩家当前属性。
  */
-class PvpActivity : AppCompatActivity() {
+class PvpActivity : BaseActivity() {
 
     private lateinit var binding: ActivityPvpBinding
     private lateinit var deviceManager: DeviceManager
@@ -40,7 +40,7 @@ class PvpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPvpBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
         deviceManager = DeviceManager.getInstance(this)
         syncManager = GameSyncManager.getInstance(this)
 
@@ -51,6 +51,8 @@ class PvpActivity : AppCompatActivity() {
         binding.btnJoinRoom.setOnClickListener { joinRoom() }
         binding.btnRoomFight.setOnClickListener { fightRoom() }
         binding.btnStartMatch.setOnClickListener { startMatchmaking() }
+        binding.btnLeaderboard.setOnClickListener { if (ClickGuard.allow()) showLeaderboard() }
+        binding.btnReplay.setOnClickListener { if (ClickGuard.allow()) showMatchHistory() }
 
         loadRating()
     }
@@ -101,6 +103,16 @@ class PvpActivity : AppCompatActivity() {
      */
     private fun startMatchmaking() {
         val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
+        AlertDialog.Builder(this)
+            .setTitle("开始匹配")
+            .setMessage("将按段位为你匹配 5 位实力接近的对手，确认开始？（${binding.tvDaily.text}）")
+            .setPositiveButton("开始匹配") { _, _ -> doMatchmake() }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun doMatchmake() {
+        val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
         binding.llMatch.removeAllViews()
         binding.llMatch.addView(text("正在匹配对手...", 14f, Color.parseColor("#9AA3C0")))
         lifecycleScope.launch {
@@ -125,6 +137,113 @@ class PvpActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showLeaderboard() {
+        val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")))
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("竞技场排行榜")
+            .setView(scroll)
+            .setPositiveButton("关闭", null)
+            .create()
+        dialog.show()
+        lifecycleScope.launch {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.pvpLeaderboard(c.first, c.second, c.third) }) {
+                is ApiResult.Success -> {
+                    box.removeAllViews()
+                    val list = r.data?.data ?: emptyList()
+                    if (list.isEmpty()) {
+                        box.addView(text("暂无排名，快去打匹配吧", 14f, Color.parseColor("#9AA3C0")))
+                        return@launch
+                    }
+                    list.forEachIndexed { i, it ->
+                        box.addView(
+                            text(
+                                "${i + 1}. ${it.player_name.ifEmpty { "未知玩家" }} · ${it.rating} 分（${it.wins}胜${it.losses}负）",
+                                13f, Color.parseColor("#C8D4E8")
+                            )
+                        )
+                    }
+                }
+                is ApiResult.Error -> {
+                    box.removeAllViews()
+                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")))
+                }
+            }
+        }
+    }
+
+    private fun showMatchHistory() {
+        val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        box.addView(text("加载中...", 13f, Color.parseColor("#9AA3C0")))
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("我的对战 · 点战绩看回放")
+            .setView(scroll)
+            .setPositiveButton("关闭", null)
+            .create()
+        dialog.show()
+        lifecycleScope.launch {
+            when (val r = ApiClient.safeApiCall { ApiClient.api.pvpMatches(c.first, c.second, c.third) }) {
+                is ApiResult.Success -> {
+                    box.removeAllViews()
+                    val list = r.data?.data ?: emptyList()
+                    if (list.isEmpty()) {
+                        box.addView(text("暂无对战记录", 14f, Color.parseColor("#9AA3C0")))
+                        return@launch
+                    }
+                    list.forEach { m ->
+                        val row = text(
+                            "vs ${m.opponent} · ${if (m.win) "胜" else "负"} ${if (m.delta >= 0) "+" else ""}${m.delta} · ${m.createdAt}",
+                            13f,
+                            if (m.win) Color.parseColor("#5CFFB8") else Color.parseColor("#FF9A9A")
+                        )
+                        row.setPadding(dp(4), dp(8), dp(4), dp(8))
+                        row.setOnClickListener { showReplay(m.opponent, m.log) }
+                        box.addView(row)
+                    }
+                }
+                is ApiResult.Error -> {
+                    box.removeAllViews()
+                    box.addView(text("加载失败：${r.message}", 13f, Color.parseColor("#FF6B7A")))
+                }
+            }
+        }
+    }
+
+    private fun showReplay(opponent: String, log: List<String>) {
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        if (log.isEmpty()) {
+            box.addView(text("本场没有可回放的日志", 13f, Color.parseColor("#9AA3C0")))
+        } else {
+            log.forEach { line ->
+                val color = when {
+                    line.contains("暴击") -> "#FFD36D"
+                    line.contains("胜利") || line.contains("败北") || line.contains("获胜") -> "#F4F6FF"
+                    else -> "#C8D4E8"
+                }
+                box.addView(text(line, 13f, Color.parseColor(color)))
+            }
+        }
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
+        AlertDialog.Builder(this)
+            .setTitle("战斗回放 · vs $opponent")
+            .setView(scroll)
+            .setPositiveButton("关闭", null)
+            .show()
     }
 
     private fun targetRow(t: PvpTargetItem): MaterialCardView {

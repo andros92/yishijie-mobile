@@ -13,14 +13,14 @@ import androidx.lifecycle.lifecycleScope
 
 import kotlinx.coroutines.launch
 
-class AnnouncementActivity : AppCompatActivity() {
+class AnnouncementActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAnnouncementBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAnnouncementBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
         binding.btnBack.setOnClickListener { finish() }
         loadAnnouncements()
     }

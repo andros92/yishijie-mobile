@@ -178,37 +178,10 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:lineSpacingExtra="4dp"
-                android:text="1. 点击套餐，自动复制你的玩家 ID\n2. 在爱发电支付页「备注 / 留言」粘贴 ID\n3. 完成支付后回来点「查询到账」\n4. 金币自动入账，点「同步到手环」"
+                android:text="1. 点击套餐，自动复制你的玩家 ID\n2. 在爱发电支付页「备注 / 留言」粘贴 ID\n3. 完成支付后金币自动发放到游戏邮箱\n4. 连接手环后打开邮箱领取即可"
                 android:textSize="13sp"
                 android:textColor="@color/text_primary" />
         </com.google.android.material.card.MaterialCardView>
-
-        <!-- 操作 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp">
-
-            <Button
-                android:id="@+id/btnCheckOrders"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="查询到账"
-                android:textSize="14sp"
-                android:backgroundTint="@color/primary"
-                android:layout_marginEnd="8dp" />
-
-            <Button
-                android:id="@+id/btnSyncSave"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="同步到手环"
-                android:textSize="14sp"
-                android:backgroundTint="@color/accent" />
-        </LinearLayout>
 
         <TextView
             android:id="@+id/tvStatus"

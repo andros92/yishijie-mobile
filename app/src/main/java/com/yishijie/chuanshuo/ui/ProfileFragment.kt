@@ -37,14 +37,26 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         deviceManager = DeviceManager.getInstance(requireContext())
         binding.btnCopyId.setOnClickListener { copyId() }
-        binding.rowRename.setOnClickListener { rename() }
-        binding.rowSave.setOnClickListener { startActivity(Intent(requireContext(), SaveManagerActivity::class.java)) }
-        binding.rowPvp.setOnClickListener { startActivity(Intent(requireContext(), PvpActivity::class.java)) }
-        binding.rowExchange.setOnClickListener { startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java)) }
-        binding.rowBridge.setOnClickListener { startActivity(Intent(requireContext(), BridgeActivity::class.java)) }
-        binding.rowAnnouncement.setOnClickListener { startActivity(Intent(requireContext(), AnnouncementActivity::class.java)) }
-        binding.rowRedeem.setOnClickListener { startActivity(Intent(requireContext(), RedeemActivity::class.java)) }
-        binding.rowUpdate.setOnClickListener { checkUpdate() }
+        binding.rowRename.setOnClickListener { if (ClickGuard.allow()) rename() }
+        binding.rowSave.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), SaveManagerActivity::class.java))
+        }
+        binding.rowPvp.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), PvpActivity::class.java))
+        }
+        binding.rowExchange.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), ExchangeBrowseActivity::class.java))
+        }
+        binding.rowBridge.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), BridgeActivity::class.java))
+        }
+        binding.rowAnnouncement.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), AnnouncementActivity::class.java))
+        }
+        binding.rowRedeem.setOnClickListener {
+            if (ClickGuard.allow()) startActivity(Intent(requireContext(), RedeemActivity::class.java))
+        }
+        binding.rowUpdate.setOnClickListener { if (ClickGuard.allow()) checkUpdate() }
         refresh()
     }
 

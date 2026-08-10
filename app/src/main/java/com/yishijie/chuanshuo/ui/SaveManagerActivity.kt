@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
-class SaveManagerActivity : AppCompatActivity() {
+class SaveManagerActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySaveManagerBinding
     private lateinit var syncManager: GameSyncManager
@@ -23,7 +23,7 @@ class SaveManagerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySaveManagerBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
         syncManager = GameSyncManager.getInstance(this)
         deviceManager = DeviceManager.getInstance(this)
 

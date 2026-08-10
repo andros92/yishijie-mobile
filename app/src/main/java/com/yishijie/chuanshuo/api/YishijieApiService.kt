@@ -122,6 +122,20 @@ interface YishijieApiService {
     @GET("/api/yishijie/pvp/rating")
     suspend fun pvpRating(@Query("playerId") playerId: String): Response<PvpRatingResponse>
 
+    @GET("/api/yishijie/pvp/leaderboard")
+    suspend fun pvpLeaderboard(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<PvpLeaderboardResponse>
+
+    @GET("/api/yishijie/pvp/matches")
+    suspend fun pvpMatches(
+        @Query("playerId") playerId: String,
+        @Query("deviceFingerprint") deviceFingerprint: String,
+        @Query("apiKey") apiKey: String
+    ): Response<PvpMatchesResponse>
+
     // ========== PVP 房间对战 ==========
     @POST("/api/yishijie/pvp/room/create")
     suspend fun pvpRoomCreate(@Body body: JsonObject): Response<JsonObject>

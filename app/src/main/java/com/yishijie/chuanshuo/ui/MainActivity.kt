@@ -11,7 +11,7 @@ import com.yishijie.chuanshuo.interconnect.GameSyncManager
 import com.yishijie.chuanshuo.interconnect.InterconnManager
 import com.yishijie.chuanshuo.service.CompanionService
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     companion object {
         const val TAB_HOME = 0
@@ -22,12 +22,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var currentTab = -1
+    private var lastSwitchAt = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ApiClient.init(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentViewWithStatus(binding.root)
 
         val interconn = InterconnManager.getInstance(this)
         GameSyncManager.getInstance(this)
@@ -47,6 +48,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun switchTab(tab: Int) {
+        val now = System.currentTimeMillis()
+        if (now - lastSwitchAt < 400) return
+        lastSwitchAt = now
         if (tab == currentTab) return
         currentTab = tab
         binding.bottomNav.menu.getItem(tab).isChecked = true
@@ -57,9 +61,11 @@ class MainActivity : AppCompatActivity() {
             else -> HomeFragment()
         }
         try {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.content, frag)
-                .commitAllowingStateLoss()
+            if (!supportFragmentManager.isStateSaved) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.content, frag)
+                    .commitAllowingStateLoss()
+            }
         } catch (e: Exception) {
             Log.e("MainActivity", "切换页面失败: $tab", e)
         }
