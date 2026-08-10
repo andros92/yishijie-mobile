@@ -171,6 +171,25 @@ class GameSyncManager private constructor(
             is ApiResult.Success -> {
                 val d = r.data
                 if (d?.success == true && d.playerId != null) {
+                    val existingId = deviceManager.getCurrentPlayerId()
+                    // 防呆：注册返回的是“新账号”，但手机端已经有账号（设备指纹没对上古账号时会出现）
+                    // 保留现有账号并把真实账号回写给手环，避免主页被“旅人”之类的默认名顶掉
+                    if (d.isNew && existingId != null && existingId != d.playerId) {
+                        val existingName = deviceManager.getCurrentPlayerName() ?: ""
+                        deviceManager.switchAccount(existingId, existingName)
+                        interconn.sendToWatch(
+                            JSONObject().put("tag", "game").put("type", "save_player_id")
+                                .put("playerId", existingId)
+                                .put("playerName", existingName)
+                                .put("deviceFingerprint", fp)
+                        )
+                        sendResponse(reqId, "register_result", JSONObject().apply {
+                            put("playerId", existingId)
+                            put("playerName", existingName)
+                            put("isNew", false)
+                        })
+                        return@handleReqRegister
+                    }
                     deviceManager.saveAccount(d.playerId, d.playerName ?: name)
                     deviceManager.switchAccount(d.playerId, d.playerName ?: name)
                     d.apiKey?.let { ApiClient.apiKey = it }
@@ -206,7 +225,9 @@ class GameSyncManager private constructor(
         }
         val playerId = json.optString("playerId", "")
         if (playerId.isNotEmpty()) {
-            val playerName = json.optString("playerName", "手环玩家")
+            // 手环可能上报空名字，此时保留手机端现有名字，避免把真名覆盖成空/默认名
+            val rawName = json.optString("playerName", "")
+            val playerName = rawName.ifEmpty { deviceManager.getCurrentPlayerName() ?: "手环玩家" }
             deviceManager.saveAccount(playerId, playerName)
             deviceManager.switchAccount(playerId, playerName)
         }
