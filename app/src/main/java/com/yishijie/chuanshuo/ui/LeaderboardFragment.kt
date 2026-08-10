@@ -60,11 +60,16 @@ class LeaderboardFragment : Fragment() {
     }
 
     private fun load() {
+        if (_binding == null) return
         binding.tvStatus.text = "加载中..."
         viewLifecycleOwner.lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 50) }) {
-                is ApiResult.Success -> render(r.data?.data ?: emptyList())
+                is ApiResult.Success -> {
+                    if (_binding == null) return@launch
+                    render(r.data?.data ?: emptyList())
+                }
                 is ApiResult.Error -> {
+                    if (_binding == null) return@launch
                     binding.llList.removeAllViews()
                     binding.llList.addView(emptyRow("加载失败：${r.message}"))
                     binding.tvStatus.text = ""
@@ -74,6 +79,7 @@ class LeaderboardFragment : Fragment() {
     }
 
     private fun render(list: List<LeaderboardItem>) {
+        if (_binding == null) return
         binding.llList.removeAllViews()
         if (list.isEmpty()) {
             binding.llList.addView(emptyRow("暂无数据"))

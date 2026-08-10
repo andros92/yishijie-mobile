@@ -110,6 +110,7 @@ class RechargeFragment : Fragment() {
     }
 
     private fun status(msg: String) {
+        if (_binding == null) return
         binding.tvStatus.text = msg
         Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
     }

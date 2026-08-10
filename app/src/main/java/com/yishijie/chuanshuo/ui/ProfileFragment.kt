@@ -71,6 +71,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun refresh() {
+        if (_binding == null) return
         val id = deviceManager.getCurrentPlayerId()
         val name = deviceManager.getCurrentPlayerName()
         binding.tvProfileName.text = if (name.isNullOrEmpty()) "未登录" else name
