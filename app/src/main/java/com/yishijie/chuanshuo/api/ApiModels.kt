@@ -345,6 +345,82 @@ data class PvpMatchesResponse(
     val error: String? = null
 )
 
+// ========== PVP 实时对战（手机端操控，服务端权威结算） ==========
+data class PvpBattleSkill(
+    val key: String = "",
+    val name: String = "",
+    val cost: String = ""
+)
+
+data class PvpBattlePet(
+    val name: String = "",
+    val lv: Int = 1
+)
+
+data class PvpBattleUnit(
+    val name: String = "",
+    val lv: Int = 1,
+    val maxHp: Int = 1,
+    val hp: Int = 1,
+    val maxMp: Int = 1,
+    val mp: Int = 1,
+    val rage: Int = 0,
+    val charge: Int = 0,
+    val shield: Int = 0,
+    val defBuff: Double = 1.0,
+    val dmgRed: Double = 0.0,
+    val atkDown: Double = 0.0,
+    val burnTurns: Int = 0,
+    val poisonTurns: Int = 0,
+    val counterBuff: Int = 0,
+    val isWarrior: Boolean = false,
+    val isMage: Boolean = false,
+    val skills: List<PvpBattleSkill> = emptyList(),
+    val pet: PvpBattlePet? = null
+)
+
+data class PvpBattleState(
+    val attacker: PvpBattleUnit? = null,
+    val defender: PvpBattleUnit? = null,
+    val turn: Int = 1,
+    val log: List<String> = emptyList(),
+    val ended: Boolean = false,
+    val win: Boolean? = null
+)
+
+data class PvpBattleStartRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val targetId: String
+)
+
+data class PvpBattleStartResponse(
+    val success: Boolean = false,
+    val battle: PvpBattleState? = null,
+    val dailyLeft: Int = 12,
+    val error: String? = null
+)
+
+data class PvpTurnRequest(
+    val playerId: String,
+    val deviceFingerprint: String,
+    val apiKey: String,
+    val targetId: String,
+    val action: JsonObject
+)
+
+data class PvpTurnResponse(
+    val success: Boolean = false,
+    val battle: PvpBattleState? = null,
+    val ended: Boolean = false,
+    val win: Boolean? = null,
+    val rating: Int? = null,
+    val delta: Int? = null,
+    val dailyLeft: Int? = null,
+    val error: String? = null
+)
+
 // ========== 爱发电充值 ==========
 data class AfdianUrlResponse(
     val success: Boolean = false,

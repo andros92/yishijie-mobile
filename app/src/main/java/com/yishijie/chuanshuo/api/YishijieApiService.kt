@@ -136,6 +136,12 @@ interface YishijieApiService {
         @Query("apiKey") apiKey: String
     ): Response<PvpMatchesResponse>
 
+    @POST("/api/yishijie/pvp/battle/start")
+    suspend fun pvpBattleStart(@Body request: PvpBattleStartRequest): Response<PvpBattleStartResponse>
+
+    @POST("/api/yishijie/pvp/battle/turn")
+    suspend fun pvpBattleTurn(@Body request: PvpTurnRequest): Response<PvpTurnResponse>
+
     // ========== PVP 房间对战 ==========
     @POST("/api/yishijie/pvp/room/create")
     suspend fun pvpRoomCreate(@Body body: JsonObject): Response<JsonObject>

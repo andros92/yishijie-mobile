@@ -47,6 +47,9 @@
         <activity
             android:name=".ui.PvpActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.PvpBattleActivity"
+            android:exported="false" />
 
         <!-- 礼包码兑换 -->
         <activity

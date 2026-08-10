@@ -42,4 +42,6 @@
     <color name="res_source">#B99CFF</color>
     <color name="res_daoyun">#FF8FA0</color>
     <color name="res_wine">#FF9AD8</color>
+    <!-- PVP 对战 -->
+    <color name="text_green">#4FD8A8</color>
 </resources>

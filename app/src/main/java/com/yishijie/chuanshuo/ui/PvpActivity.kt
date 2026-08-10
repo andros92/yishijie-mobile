@@ -36,6 +36,7 @@ class PvpActivity : BaseActivity() {
     private var roomCode = ""
     private var pollJob: Job? = null
     private var busy = false
+    private var returningFromBattle = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +61,16 @@ class PvpActivity : BaseActivity() {
     override fun onDestroy() {
         pollJob?.cancel()
         super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 打完一场返回后清空对手列表：需要重新匹配
+        if (returningFromBattle) {
+            returningFromBattle = false
+            binding.llMatch.removeAllViews()
+            binding.btnStartMatch.text = "开始匹配"
+        }
     }
 
     private fun credentials(): Triple<String, String, String>? {
@@ -291,7 +302,7 @@ class PvpActivity : BaseActivity() {
         DialogUtils.showConfirm(
             this,
             "发起匹配",
-            "向「${t.playerName}」（Lv.${t.lv}）发起挑战？\n本场由服务器模拟结算，消耗 1 次今日匹配次数。",
+            "向「${t.playerName}」（Lv.${t.lv}）发起挑战？\n对局结束后消耗 1 次今日匹配次数，双方使用真实存档，自己操控技能。",
             "挑战"
         ) {
             doMatch(t)
@@ -302,29 +313,15 @@ class PvpActivity : BaseActivity() {
         val c = credentials() ?: return
         if (busy) return
         busy = true
-        status("正在同步手环存档并匹配...")
+        status("正在同步手环存档...")
         lifecycleScope.launch {
             syncWatchSave()
-            when (val r = ApiClient.safeApiCall {
-                ApiClient.api.pvpMatch(PvpMatchRequest(c.first, c.second, c.third, t.playerId))
-            }) {
-                is ApiResult.Success -> {
-                    val d = r.data
-                    if (d?.success == true) {
-                        showBattleLog(
-                            if (d.aWin) "胜利！" else "败北",
-                            d.log,
-                            "段位 ${d.rating}（${if (d.delta >= 0) "+" else ""}${d.delta}）· 今日剩余 ${d.dailyLeft} 次"
-                        )
-                        binding.tvRating.text = "段位分：${d.rating}"
-                        binding.tvDaily.text = "今日剩余 ${d.dailyLeft} 次"
-                    } else {
-                        status(d?.error ?: "匹配失败")
-                    }
-                }
-                is ApiResult.Error -> status("匹配失败：${r.message}")
-            }
             busy = false
+            returningFromBattle = true
+            startActivityForResult(android.content.Intent(this@PvpActivity, PvpBattleActivity::class.java).apply {
+                putExtra("targetId", t.playerId)
+                putExtra("targetName", t.playerName)
+            }, 1001)
         }
     }
 
