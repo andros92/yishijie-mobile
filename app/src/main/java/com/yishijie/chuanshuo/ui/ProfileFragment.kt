@@ -134,7 +134,7 @@ class ProfileFragment : Fragment() {
     private fun doRename(playerId: String, newName: String) {
         val fp = deviceManager.getDeviceFingerprint() ?: run { Toast.makeText(requireContext(), "请先连接手环", Toast.LENGTH_SHORT).show(); return }
         val key = ApiClient.apiKey ?: run { Toast.makeText(requireContext(), "缺少 apiKey，请重新登录", Toast.LENGTH_SHORT).show(); return }
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.rename(RenameRequest(playerId, fp, key, newName)) }) {
                 is ApiResult.Success -> {
                     val d = r.data
@@ -154,7 +154,7 @@ class ProfileFragment : Fragment() {
 
     // 手动检查更新：有新版本弹窗并跳转下载链接，已是最新则提示
     private fun checkUpdate() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.version() }) {
                 is ApiResult.Success -> {
                     val v = r.data

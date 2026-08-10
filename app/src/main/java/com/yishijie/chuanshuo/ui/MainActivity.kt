@@ -10,6 +10,8 @@ import com.yishijie.chuanshuo.databinding.ActivityMainBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
 import com.yishijie.chuanshuo.interconnect.InterconnManager
 import com.yishijie.chuanshuo.service.CompanionService
+import java.io.File
+import java.util.Date
 
 class MainActivity : BaseActivity() {
 
@@ -26,6 +28,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installCrashLog()
         ApiClient.init(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentViewWithStatus(binding.root)
@@ -45,6 +48,41 @@ class MainActivity : BaseActivity() {
             true
         }
         switchTab(TAB_HOME)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 兜底：进程被系统回收重建后，Fragment 可能没恢复成功，容器空了就只剩背景
+        // 检测到容器为空时重新挂载当前页签
+        ensureFragmentAttached()
+    }
+
+    private fun ensureFragmentAttached() {
+        try {
+            if (isFinishing || isDestroyed) return
+            val existing = supportFragmentManager.findFragmentById(R.id.content)
+            if (existing == null) {
+                val tab = if (currentTab >= 0) currentTab else TAB_HOME
+                currentTab = -1
+                switchTab(tab)
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "恢复页面失败", e)
+        }
+    }
+
+    // 全局崩溃日志：下次再出现白屏/闪退，可以从 files/crash.log 拿到真实堆栈
+    private var prevCrashHandler: Thread.UncaughtExceptionHandler? = null
+    private fun installCrashLog() {
+        prevCrashHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, e ->
+            try {
+                val f = File(filesDir, "crash.log")
+                f.appendText("\n=== " + Date() + " [" + thread.name + "] ===\n" + Log.getStackTraceString(e) + "\n")
+            } catch (ignored: Exception) {
+            }
+            prevCrashHandler?.uncaughtException(thread, e)
+        }
     }
 
     fun switchTab(tab: Int) {

@@ -88,7 +88,7 @@ class RechargeFragment : Fragment() {
     }
 
     private fun openAfdian() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             status("正在打开爱发电...")
             when (val r = ApiClient.safeApiCall { ApiClient.api.afdianUrl() }) {
                 is ApiResult.Success -> {

@@ -194,7 +194,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadCloudSummaryFallback() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
             if (_binding == null) return@launch
             renderDataSummary(data?.let { JSONObject(it.toString()) })
@@ -276,7 +276,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun checkUpdate() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (val r = ApiClient.safeApiCall { ApiClient.api.version() }) {
                 is ApiResult.Success -> {
                     val v = r.data
@@ -290,7 +290,7 @@ class HomeFragment : Fragment() {
                                 try {
                                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(v.downloadUrl)))
                                 } catch (e: Exception) {
-                                    binding.tvToast.text = "无法打开下载链接"
+                                    _binding?.let { it.tvToast.text = "无法打开下载链接" }
                                 }
                             }
                         }
