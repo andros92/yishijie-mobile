@@ -438,7 +438,8 @@ class GameSyncManager private constructor(
     private suspend fun handleReqLeaderboard(json: JSONObject) {
         val reqId = json.optInt("_reqId", 0)
         val type = json.optString("lbType", "level")
-        when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 50) }) {
+        // 手环屏幕小，只取前 5 名，减小蓝牙传输量
+        when (val r = ApiClient.safeApiCall { ApiClient.api.leaderboard(type, 5) }) {
             is ApiResult.Success -> {
                 val arr = JSONArray()
                 (r.data?.data ?: emptyList()).forEach { it ->
