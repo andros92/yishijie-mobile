@@ -532,6 +532,12 @@ class InterconnManager private constructor(private val context: Context) {
     fun getState(): ConnectionState = connectionState
 
     /**
+     * 当前手环节点ID（穿戴SDK分配，硬件绑定、卸载重装不变）——
+     * 手环本地拿不到有效 deviceId 时用它生成稳定设备指纹
+     */
+    fun getWatchNodeId(): String? = currentNode?.id
+
+    /**
      * 是否已就绪
      */
     fun isReady(): Boolean = connectionState == ConnectionState.READY
