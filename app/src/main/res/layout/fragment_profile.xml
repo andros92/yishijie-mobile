@@ -271,6 +271,23 @@
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/surface_border" android:layout_marginStart="52dp" />
 
                 <LinearLayout
+                    android:id="@+id/rowLogout"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" app:srcCompat="@drawable/ic_back" android:contentDescription="退出登录" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="退出登录" android:textSize="15sp" android:textColor="@color/error" android:layout_marginStart="12dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textSize="20sp" android:textColor="@color/text_hint" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/surface_border" android:layout_marginStart="52dp" />
+
+                <LinearLayout
                     android:id="@+id/rowUpdate"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
