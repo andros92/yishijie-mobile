@@ -103,12 +103,14 @@ class PvpActivity : BaseActivity() {
      */
     private fun startMatchmaking() {
         val c = credentials() ?: run { status("请先连接手环并登录账号"); return }
-        AlertDialog.Builder(this)
-            .setTitle("开始匹配")
-            .setMessage("将按段位为你匹配 5 位实力接近的对手，确认开始？（${binding.tvDaily.text}）")
-            .setPositiveButton("开始匹配") { _, _ -> doMatchmake() }
-            .setNegativeButton("取消", null)
-            .show()
+        DialogUtils.showConfirm(
+            this,
+            "开始匹配",
+            "将按段位为你匹配 5 位实力接近的对手，确认开始？（${binding.tvDaily.text}）",
+            "开始匹配"
+        ) {
+            doMatchmake()
+        }
     }
 
     private fun doMatchmake() {
@@ -286,12 +288,14 @@ class PvpActivity : BaseActivity() {
 
     private fun confirmChallenge(t: PvpTargetItem) {
         if (busy) return
-        AlertDialog.Builder(this)
-            .setTitle("发起匹配")
-            .setMessage("向「${t.playerName}」（Lv.${t.lv}）发起挑战？\n本场由服务器模拟结算，消耗 1 次今日匹配次数。")
-            .setPositiveButton("挑战") { _, _ -> doMatch(t) }
-            .setNegativeButton("取消", null)
-            .show()
+        DialogUtils.showConfirm(
+            this,
+            "发起匹配",
+            "向「${t.playerName}」（Lv.${t.lv}）发起挑战？\n本场由服务器模拟结算，消耗 1 次今日匹配次数。",
+            "挑战"
+        ) {
+            doMatch(t)
+        }
     }
 
     private fun doMatch(t: PvpTargetItem) {

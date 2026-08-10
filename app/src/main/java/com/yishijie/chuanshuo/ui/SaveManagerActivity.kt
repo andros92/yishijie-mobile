@@ -1,17 +1,9 @@
 package com.yishijie.chuanshuo.ui
 
-import android.app.Dialog
-import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
-import android.view.Gravity
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.card.MaterialCardView
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.yishijie.chuanshuo.R
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.databinding.ActivitySaveManagerBinding
 import com.yishijie.chuanshuo.interconnect.GameSyncManager
@@ -68,7 +60,7 @@ class SaveManagerActivity : BaseActivity() {
                 status("今天已恢复过存档（每日限 1 次），明天再来")
                 return@setOnClickListener
             }
-            showCustomConfirm("恢复云存档", "将从云存档恢复到手环，覆盖手环当前存档（每日限 1 次）。确定继续？") {
+            DialogUtils.showConfirm(this, "恢复云存档", "将从云存档恢复到手环，覆盖手环当前存档（每日限 1 次）。确定继续？", "恢复") {
                 doRestore()
             }
         }
@@ -80,76 +72,6 @@ class SaveManagerActivity : BaseActivity() {
 
         loadCloudSummary()
     }
-
-    /**
-     * 自绘确认弹窗（不用系统默认弹窗）
-     */
-    private fun showCustomConfirm(title: String, message: String, onOk: () -> Unit) {
-        val card = MaterialCardView(this).apply {
-            radius = dp(20).toFloat()
-            elevation = dp(2).toFloat()
-            setCardBackgroundColor(Color.parseColor("#141C34"))
-            strokeColor = Color.parseColor("#3D5291")
-            strokeWidth = 1
-        }
-        val inner = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(22), dp(18), dp(22), dp(18))
-        }
-        inner.addView(TextView(this).apply {
-            text = title
-            textSize = 17f
-            setTextColor(Color.parseColor("#FFD36D"))
-            setTypeface(null, Typeface.BOLD)
-            gravity = Gravity.CENTER
-        })
-        inner.addView(TextView(this).apply {
-            text = message
-            textSize = 14f
-            setTextColor(Color.parseColor("#F4F6FF"))
-            setPadding(0, dp(12), 0, dp(18))
-        })
-        val btnRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-        }
-        val cancel = TextView(this).apply {
-            text = "取消"
-            textSize = 15f
-            setTextColor(Color.parseColor("#C8D4E8"))
-            setTypeface(null, Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(dp(26), dp(10), dp(26), dp(10))
-            background = resources.getDrawable(R.drawable.bg_chip, theme)
-        }
-        val ok = TextView(this).apply {
-            text = "恢复"
-            textSize = 15f
-            setTextColor(Color.parseColor("#0B0F1F"))
-            setTypeface(null, Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(dp(26), dp(10), dp(26), dp(10))
-            background = resources.getDrawable(R.drawable.bg_btn_gold, theme)
-        }
-        val dialog = Dialog(this).apply {
-            setContentView(card)
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
-        }
-        cancel.setOnClickListener { dialog.dismiss() }
-        ok.setOnClickListener {
-            dialog.dismiss()
-            onOk()
-        }
-        btnRow.addView(cancel)
-        btnRow.addView(ok, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-            marginStart = dp(8)
-        })
-        inner.addView(btnRow)
-        card.addView(inner)
-        dialog.show()
-    }
-
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     private fun doRestore() {
         if (deviceManager.getCurrentPlayerId() == null) return

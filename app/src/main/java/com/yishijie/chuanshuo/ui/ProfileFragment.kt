@@ -95,17 +95,17 @@ class ProfileFragment : Fragment() {
      * 退出登录：清除手机本地缓存的账号（playerId/apiKey），重新连接手环后会自动同步手环的账号
      */
     private fun logout() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("退出登录")
-            .setMessage("将清除手机上的本地账号缓存。手环端如有残留账号，请在手环“设置 → 清除账号”一并清理。确定退出？")
-            .setPositiveButton("退出") { _, _ ->
-                deviceManager.clearLoginState()
-                ApiClient.apiKey = null
-                refresh()
-                Toast.makeText(requireContext(), "已退出登录，重新连接手环后会自动同步账号", Toast.LENGTH_LONG).show()
-            }
-            .setNegativeButton("取消", null)
-            .show()
+        DialogUtils.showConfirm(
+            requireActivity(),
+            "退出登录",
+            "将清除手机上的本地账号缓存。手环端如有残留账号，请在手环“设置 → 清除账号”一并清理。确定退出？",
+            "退出"
+        ) {
+            deviceManager.clearLoginState()
+            ApiClient.apiKey = null
+            refresh()
+            Toast.makeText(requireContext(), "已退出登录，重新连接手环后会自动同步账号", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun rename() {
