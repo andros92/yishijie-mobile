@@ -56,10 +56,6 @@ class SaveManagerActivity : BaseActivity() {
         // 恢复：从服务器下载 → 下发给手环（每日限 1 次）
         binding.btnRestoreServer.setOnClickListener {
             if (!requireLogin()) return@setOnClickListener
-            if (!deviceManager.canRestoreToday()) {
-                status("今天已恢复过存档（每日限 1 次），明天再来")
-                return@setOnClickListener
-            }
             DialogUtils.showConfirm(this, "恢复云存档", "将从云存档恢复到手环，覆盖手环当前存档（每日限 1 次）。确定继续？", "恢复") {
                 doRestore()
             }
@@ -75,18 +71,14 @@ class SaveManagerActivity : BaseActivity() {
 
     private fun doRestore() {
         if (deviceManager.getCurrentPlayerId() == null) return
-        if (!deviceManager.canRestoreToday()) {
-            status("今天已恢复过存档（每日限 1 次），明天再来")
-            return
-        }
         lifecycleScope.launch {
             status("下载云存档…")
-            val data = withContext(Dispatchers.IO) { syncManager.downloadSaveFromServer() }
-            if (data == null) {
-                status("下载失败：服务器上没有存档，或登录/网络异常")
+            val result = withContext(Dispatchers.IO) { syncManager.restoreSaveFromServer() }
+            val data = result.data
+            if (!result.ok || data == null) {
+                status(result.error ?: "下载失败：服务器上没有存档，或登录/网络异常")
                 return@launch
             }
-            deviceManager.markRestoredToday()
             status("已从服务器下载，正在下发给手环…")
             syncManager.uploadSaveToBand(JSONObject(data.toString()), object : GameSyncManager.SaveCallback {
                 override fun onSaveUploaded(success: Boolean, message: String) {}

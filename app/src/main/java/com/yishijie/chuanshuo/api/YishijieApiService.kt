@@ -18,7 +18,8 @@ interface YishijieApiService {
     suspend fun downloadSave(
         @Path("playerId") playerId: String,
         @Query("deviceFingerprint") deviceFingerprint: String,
-        @Query("apiKey") apiKey: String
+        @Query("apiKey") apiKey: String,
+        @Query("restore") restore: Boolean? = null
     ): Response<SaveResponse>
 
     @POST("/api/yishijie/saves/{playerId}")

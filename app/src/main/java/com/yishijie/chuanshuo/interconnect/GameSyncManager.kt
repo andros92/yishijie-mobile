@@ -14,6 +14,7 @@ import com.yishijie.chuanshuo.api.PvpReportRequest
 import com.yishijie.chuanshuo.api.RedeemRequest
 import com.yishijie.chuanshuo.api.RechargeOrderRequest
 import com.yishijie.chuanshuo.api.RegisterRequest
+import com.yishijie.chuanshuo.api.RegisterResponse
 import com.yishijie.chuanshuo.api.SaveUploadRequest
 import com.yishijie.chuanshuo.data.DeviceManager
 import com.yishijie.chuanshuo.service.CompanionService
@@ -64,6 +65,12 @@ class GameSyncManager private constructor(
 
     data class SaveUploadResult(
         val ok: Boolean,
+        val error: String? = null
+    )
+
+    data class SaveRestoreResult(
+        val ok: Boolean,
+        val data: JsonObject? = null,
         val error: String? = null
     )
 
@@ -177,46 +184,52 @@ class GameSyncManager private constructor(
             is ApiResult.Success -> {
                 val d = r.data
                 if (d?.success == true && d.playerId != null) {
-                    val existingId = deviceManager.getCurrentPlayerId()
-                    // 防呆：注册返回的是“新账号”，但手机端已经有账号（设备指纹没对上古账号时会出现）
-                    // 保留现有账号并把真实账号回写给手环，避免主页被“旅人”之类的默认名顶掉
-                    if (d.isNew && existingId != null && existingId != d.playerId) {
-                        val existingName = deviceManager.getCurrentPlayerName() ?: ""
-                        deviceManager.switchAccount(existingId, existingName)
-                        interconn.sendToWatch(
-                            JSONObject().put("tag", "game").put("type", "save_player_id")
-                                .put("playerId", existingId)
-                                .put("playerName", existingName)
-                                .put("deviceFingerprint", fp)
-                        )
-                        sendResponse(reqId, "register_result", JSONObject().apply {
-                            put("playerId", existingId)
-                            put("playerName", existingName)
-                            put("isNew", false)
-                        })
-                        return@handleReqRegister
-                    }
-                    deviceManager.saveAccount(d.playerId, d.playerName ?: name)
-                    deviceManager.switchAccount(d.playerId, d.playerName ?: name)
-                    d.apiKey?.let { ApiClient.apiKey = it }
+                    val boundId = bindRegisteredAccount(d, fp, name)
                     sendResponse(reqId, "register_result", JSONObject().apply {
-                        put("playerId", d.playerId)
-                        put("playerName", d.playerName ?: name)
-                        put("isNew", d.isNew)
+                        put("playerId", boundId)
+                        put("playerName", deviceManager.getCurrentPlayerName() ?: name)
+                        put("isNew", d.isNew && boundId == d.playerId)
                     })
-                    // 通知手环保存 playerId
-                    interconn.sendToWatch(
-                        JSONObject().put("tag", "game").put("type", "save_player_id")
-                            .put("playerId", d.playerId)
-                            .put("playerName", d.playerName ?: name)
-                            .put("deviceFingerprint", fp)
-                    )
                 } else {
                     sendResponse(reqId, "register_result", JSONObject().put("error", d?.error ?: "注册失败"))
                 }
             }
             is ApiResult.Error -> sendResponse(reqId, "register_result", JSONObject().put("error", r.message))
         }
+    }
+
+    /**
+     * 注册/登录成功后，把账号落到手机端并回写手环，返回最终绑定的 playerId
+     */
+    private fun bindRegisteredAccount(d: RegisterResponse, fp: String, fallbackName: String): String {
+        val pid = d.playerId ?: return ""
+        val existingId = deviceManager.getCurrentPlayerId()
+        // 防呆：注册返回的是“新账号”，但手机端已经有账号（设备指纹没对上古账号时会出现）
+        // 保留现有账号并把真实账号回写给手环，避免主页被“旅人”之类的默认名顶掉
+        if (d.isNew && existingId != null && existingId != pid) {
+            val existingName = deviceManager.getCurrentPlayerName() ?: ""
+            deviceManager.switchAccount(existingId, existingName)
+            interconn.sendToWatch(
+                JSONObject().put("tag", "game").put("type", "save_player_id")
+                    .put("playerId", existingId)
+                    .put("playerName", existingName)
+                    .put("deviceFingerprint", fp)
+            )
+            notifyFingerprintUpdated()
+            return existingId
+        }
+        deviceManager.saveAccount(pid, d.playerName ?: fallbackName)
+        deviceManager.switchAccount(pid, d.playerName ?: fallbackName)
+        d.apiKey?.let { ApiClient.apiKey = it }
+        // 通知手环保存 playerId
+        interconn.sendToWatch(
+            JSONObject().put("tag", "game").put("type", "save_player_id")
+                .put("playerId", pid)
+                .put("playerName", d.playerName ?: fallbackName)
+                .put("deviceFingerprint", fp)
+        )
+        notifyFingerprintUpdated()
+        return pid
     }
 
     /**
@@ -239,6 +252,43 @@ class GameSyncManager private constructor(
             val playerName = rawName.ifEmpty { deviceManager.getCurrentPlayerName() ?: "手环玩家" }
             deviceManager.saveAccount(playerId, playerName)
             deviceManager.switchAccount(playerId, playerName)
+            // 手机端重装/清数据后 apiKey 会丢（只在内存里），这里凭指纹登录补回令牌，避免“未登录账号”
+            restoreApiKeyIfNeeded()
+        } else if (fpValid(fp)) {
+            // 手环还没有账号：用这次拿到的有效指纹自动注册/找回账号
+            // （服务端按指纹幂等：已有账号直接返回原账号，没有则创建新账号）
+            val name = json.optString("playerName", "").ifEmpty { "旅人" }
+            val request = RegisterRequest(name, fp, deviceManager.getPhoneFingerprint())
+            when (val r = ApiClient.safeApiCall { ApiClient.api.register(request) }) {
+                is ApiResult.Success -> {
+                    val d = r.data
+                    if (d?.success == true && d.playerId != null) {
+                        bindRegisteredAccount(d, fp, name)
+                    } else {
+                        Log.e(TAG, "自动注册失败: ${d?.error ?: "注册失败"}")
+                    }
+                }
+                is ApiResult.Error -> Log.e(TAG, "自动注册失败: ${r.message}")
+            }
+        }
+    }
+
+    /**
+     * apiKey 丢失时（重装/清数据后只有内存持有）凭指纹登录补回，
+     * 避免桥接正常、指纹已识别、账号也有，但上传/交易提示“未登录账号”。
+     */
+    private suspend fun restoreApiKeyIfNeeded() {
+        if (ApiClient.apiKey != null) return
+        val fp = deviceManager.getDeviceFingerprint() ?: return
+        if (!fpValid(fp)) return
+        val r = ApiClient.safeApiCall { ApiClient.api.login(LoginRequest(fp, deviceManager.getPhoneFingerprint())) }
+        if (r is ApiResult.Success) {
+            val d = r.data
+            if (d?.success == true && d.playerId != null) {
+                deviceManager.saveAccount(d.playerId, d.playerName ?: "")
+                deviceManager.switchAccount(d.playerId, d.playerName ?: "")
+                d.apiKey?.let { ApiClient.apiKey = it }
+            }
         }
     }
 
@@ -725,12 +775,33 @@ class GameSyncManager private constructor(
     suspend fun downloadSaveFromServer(): JsonObject? {
         val playerId = deviceManager.getCurrentPlayerId() ?: return null
         val fp = deviceManager.getDeviceFingerprint() ?: return null
+        restoreApiKeyIfNeeded()
         val key = ApiClient.apiKey ?: return null
         return when (val r = ApiClient.safeApiCall { ApiClient.api.downloadSave(playerId, fp, key) }) {
             is ApiResult.Success -> r.data?.data
             is ApiResult.Error -> {
                 Log.e(TAG, "下载存档失败: ${r.message}")
                 null
+            }
+        }
+    }
+
+    suspend fun restoreSaveFromServer(): SaveRestoreResult {
+        val playerId = deviceManager.getCurrentPlayerId() ?: return SaveRestoreResult(false, error = "未登录账号")
+        val fp = deviceManager.getDeviceFingerprint() ?: return SaveRestoreResult(false, error = "未获取到设备指纹，请先连接手环")
+        restoreApiKeyIfNeeded()
+        val key = ApiClient.apiKey ?: return SaveRestoreResult(false, error = "未登录账号")
+        return when (val r = ApiClient.safeApiCall { ApiClient.api.downloadSave(playerId, fp, key, true) }) {
+            is ApiResult.Success -> {
+                if (r.data?.success == true && r.data?.data != null) {
+                    SaveRestoreResult(true, data = r.data.data)
+                } else {
+                    SaveRestoreResult(false, error = r.data?.error ?: "服务器上暂无存档，或登录/网络异常")
+                }
+            }
+            is ApiResult.Error -> {
+                Log.e(TAG, "恢复存档失败: ${r.message}")
+                SaveRestoreResult(false, error = r.message)
             }
         }
     }
@@ -746,6 +817,7 @@ class GameSyncManager private constructor(
         if (save == null) return SaveUploadResult(false, "存档数据为空")
         val playerId = deviceManager.getCurrentPlayerId() ?: return SaveUploadResult(false, "未登录账号")
         val fp = deviceManager.getDeviceFingerprint() ?: return SaveUploadResult(false, "未获取到设备指纹，请先连接手环")
+        restoreApiKeyIfNeeded()
         val key = ApiClient.apiKey ?: return SaveUploadResult(false, "未登录账号")
         return when (val r = ApiClient.safeApiCall { ApiClient.api.uploadSave(playerId, SaveUploadRequest(fp, key, save, deviceTime)) }) {
             is ApiResult.Success -> {
